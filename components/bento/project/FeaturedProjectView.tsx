@@ -86,9 +86,9 @@ export const FeaturedProjectView: React.FC<FeaturedProjectViewProps> = ({
       badge="FLAGSHIP"
       isEditingActive={isEditingActive}
       onUpdateTitle={onUpdateCardTitle || ((val) => updateField('title', val))}
-      className="h-full flex flex-col justify-between"
+      className="h-full flex flex-col justify-between overflow-hidden"
     >
-      <div className="space-y-3">
+      <div className="overflow-y-auto max-h-95 md:max-h-110 pr-1.5 flex-1 space-y-3">
         <div className="relative w-full h-40 md:h-48 border-2 border-black dark:border-white overflow-hidden shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff]">
           <AnimatePresence mode="wait">
             <motion.div
@@ -178,7 +178,7 @@ export const FeaturedProjectView: React.FC<FeaturedProjectViewProps> = ({
         </div>
       </div>
 
-      <div className="mt-4 pt-3 border-t-2 border-black dark:border-white space-y-3">
+      <div className="mt-4 pt-3 border-t-2 border-black dark:border-white space-y-3 shrink-0">
         <EditableTagList
           tags={project.tags}
           onChangeTags={(tags) => updateField('tags', tags)}

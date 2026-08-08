@@ -100,10 +100,10 @@ export const SocialsCard: React.FC<SocialsCardProps> = ({
       title={cardTitle || "Connect & Links"}
       isEditingActive={isEditingActive}
       onUpdateTitle={onUpdateCardTitle}
-      className="h-full flex flex-col justify-between"
+      className="h-full flex flex-col justify-between overflow-hidden"
     >
-      <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-2">
+      <div className="overflow-y-auto max-h-95 md:max-h-110 pr-1.5 flex-1 space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {socials.map((soc) => (
             <div key={soc.id} className="relative group/soc">
               <motion.a

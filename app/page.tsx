@@ -32,6 +32,21 @@ export default function Home() {
       }),
     }).catch(() => {});
 
+    // Cross-tab & Focus Synchronization: auto-refetch when user switches back to this tab or when data updates in another tab
+    const handleFocusOrVisibility = () => {
+      fetchPortfolio();
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.PORTFOLIO_DRAFT) {
+        fetchPortfolio();
+      }
+    };
+
+    window.addEventListener('focus', handleFocusOrVisibility);
+    document.addEventListener('visibilitychange', handleFocusOrVisibility);
+    window.addEventListener('storage', handleStorageChange);
+
     // Secret shortcut: Ctrl + Alt + Shift + KEY
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
@@ -46,7 +61,12 @@ export default function Home() {
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('focus', handleFocusOrVisibility);
+      document.removeEventListener('visibilitychange', handleFocusOrVisibility);
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [fetchPortfolio]);
 
   const currentFontCss =

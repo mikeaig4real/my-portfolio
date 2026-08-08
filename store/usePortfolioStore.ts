@@ -3,6 +3,7 @@ import { PortfolioData, CheckpointSnapshot } from '@/types/portfolio';
 import { defaultPortfolioData } from '@/lib/defaultData';
 import { randomizeCardColors } from '@/lib/colorPalettes';
 import { STORAGE_KEYS } from '@/lib/constants';
+import { logger } from "@/lib/logger";
 
 export interface PortfolioState {
   data: PortfolioData;
@@ -123,6 +124,10 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
   savePortfolio: async (updatedData?: PortfolioData) => {
     const currentData = get().data;
     const targetData = updatedData || currentData;
+    console.info({
+      updatedData,
+      currentData,
+    });
 
     // Create an automatic rollback checkpoint snapshot before auto-saving
     if (get().autoSaveEnabled) {

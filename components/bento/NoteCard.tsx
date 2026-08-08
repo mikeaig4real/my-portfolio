@@ -40,9 +40,9 @@ export const NoteCard: React.FC<NoteCardProps> = ({
       title={cardTitle || title}
       isEditingActive={isEditingActive}
       onUpdateTitle={onUpdateCardTitle}
-      className="h-full flex flex-col justify-between"
+      className="h-full flex flex-col justify-between overflow-hidden"
     >
-      <div className="space-y-2">
+      <div className="overflow-y-auto max-h-95 md:max-h-110 pr-1.5 flex-1 space-y-2">
         <div className="flex items-center gap-2">
           <Award className="w-5 h-5 text-emerald-600 dark:text-emerald-400 stroke-[2.5] shrink-0" />
           <span className="text-xs font-mono font-extrabold uppercase text-black dark:text-white">
@@ -64,7 +64,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({
         </p>
       </div>
 
-      <div className="mt-3 pt-2 border-t-2 border-black dark:border-white flex items-center justify-between">
+      <div className="mt-3 pt-2 border-t-2 border-black dark:border-white flex items-center justify-between shrink-0">
         <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300">
           <InlineText
             value={metricLabel || 'Verification'}

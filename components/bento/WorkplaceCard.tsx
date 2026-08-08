@@ -73,49 +73,50 @@ export const WorkplaceCard: React.FC<WorkplaceCardProps> = ({
       badge={`${workplaces.length} ROLES`}
       isEditingActive={isEditingActive}
       onUpdateTitle={onUpdateCardTitle}
-      className="h-full flex flex-col justify-between"
+      className="h-full flex flex-col justify-between overflow-hidden"
     >
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b-2 border-black dark:border-white mb-4 no-scrollbar">
-        {workplaces.map((work, idx) => (
-          <div key={work.id} className="relative group/tab flex items-center">
+      <div className="overflow-y-auto max-h-95 md:max-h-110 pr-1.5 flex-1 flex flex-col justify-between space-y-3">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b-2 border-black dark:border-white mb-2 no-scrollbar shrink-0">
+          {workplaces.map((work, idx) => (
+            <div key={work.id} className="relative group/tab flex items-center">
+              <button
+                onClick={() => setActiveTab(idx)}
+                className={`px-3 py-1.5 text-xs font-mono font-bold uppercase whitespace-nowrap border-2 border-black dark:border-white transition-all cursor-pointer ${
+                  activeTab === idx
+                    ? 'bg-black text-white dark:bg-white dark:text-black shadow-[3px_3px_0px_0px_#facc15]'
+                    : 'bg-white text-black dark:bg-slate-800 dark:text-white hover:bg-yellow-300 hover:text-black dark:hover:text-black'
+                }`}
+              >
+                {work.company}
+              </button>
+
+              {isEditingActive && workplaces.length > 1 && (
+                <span className="ml-1 hidden group-hover/tab:inline-block">
+                  <DeleteEdgeControl onDelete={() => handleDeleteRole(work.id)} />
+                </span>
+              )}
+            </div>
+          ))}
+
+          {isEditingActive && (
             <button
-              onClick={() => setActiveTab(idx)}
-              className={`px-3 py-1.5 text-xs font-mono font-bold uppercase whitespace-nowrap border-2 border-black dark:border-white transition-all cursor-pointer ${
-                activeTab === idx
-                  ? 'bg-black text-white dark:bg-white dark:text-black shadow-[3px_3px_0px_0px_#facc15]'
-                  : 'bg-white text-black dark:bg-slate-800 dark:text-white hover:bg-yellow-300 hover:text-black dark:hover:text-black'
-              }`}
+              onClick={handleAddRole}
+              className="px-2 py-1 bg-yellow-300 text-black border-2 border-black text-xs font-mono font-bold hover:bg-yellow-400 cursor-pointer whitespace-nowrap"
             >
-              {work.company}
+              + Add Role
             </button>
+          )}
+        </div>
 
-            {isEditingActive && workplaces.length > 1 && (
-              <span className="ml-1 hidden group-hover/tab:inline-block">
-                <DeleteEdgeControl onDelete={() => handleDeleteRole(work.id)} />
-              </span>
-            )}
-          </div>
-        ))}
-
-        {isEditingActive && (
-          <button
-            onClick={handleAddRole}
-            className="px-2 py-1 bg-yellow-300 text-black border-2 border-black text-xs font-mono font-bold hover:bg-yellow-400 cursor-pointer whitespace-nowrap"
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentWork.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-3 flex-1 flex flex-col justify-between"
           >
-            + Add Role
-          </button>
-        )}
-      </div>
-
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentWork.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="space-y-3 flex-1 flex flex-col justify-between"
-        >
           <div>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-lg font-extrabold text-black dark:text-white font-mono uppercase">
@@ -210,6 +211,7 @@ export const WorkplaceCard: React.FC<WorkplaceCardProps> = ({
           />
         </motion.div>
       </AnimatePresence>
+      </div>
     </BrutalCard>
   );
 };

@@ -51,11 +51,11 @@ export const CertificationCard: React.FC<CertificationCardProps> = ({
       isEditingActive={isEditingActive}
       onUpdateTitle={onUpdateCardTitle}
       onClick={handleCardClick}
-      className={`h-full flex flex-col justify-between ${
+      className={`h-full flex flex-col justify-between overflow-hidden ${
         hasValidUrl && !isEditingActive ? 'cursor-pointer hover:brightness-105' : ''
       }`}
     >
-      <div className="space-y-3">
+      <div className="overflow-y-auto max-h-95 md:max-h-110 pr-1.5 flex-1 space-y-3">
         <div className="flex items-start gap-3">
           <div className="p-2.5 bg-yellow-300 border-2 border-black dark:border-white text-black shadow-[3px_3px_0px_0px_#000] shrink-0">
             <Award className="w-6 h-6 stroke-[2.5]" />
@@ -81,7 +81,7 @@ export const CertificationCard: React.FC<CertificationCardProps> = ({
         </div>
       </div>
 
-      <div className="mt-4 pt-2.5 border-t-2 border-black dark:border-white flex items-center justify-between font-mono">
+      <div className="mt-4 pt-2.5 border-t-2 border-black dark:border-white flex items-center justify-between font-mono shrink-0">
         <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
           ISSUED: <InlineText value={issueDate} onChange={(val) => updateField('issueDate', val)} isEditingActive={isEditingActive} />
         </span>

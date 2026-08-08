@@ -59,11 +59,23 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
         {/* Left Side: Status & Mode Indicators */}
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping inline-block shrink-0" />
-          <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wide truncate max-w-[180px] sm:max-w-none">
+          <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wide truncate max-w-45 sm:max-w-none">
             {isPreviewMode ? '👁️ PREVIEW MODE' : '⚡ LIVE STUDIO'}
           </span>
-          <span className="hidden lg:inline-block text-[10px] bg-black text-white px-2 py-0.5 font-bold border border-white/20">
-            {autoSaveEnabled ? '⚡ AUTO-SAVE ACTIVE' : 'MANUAL SAVE MODE'}
+          <span className="hidden lg:inline-flex items-center gap-1 text-[10px] bg-black text-white px-2 py-0.5 font-bold border border-white/20">
+            {autoSaveEnabled ? (
+              saving ? (
+                <span className="text-yellow-300 animate-pulse flex items-center gap-1">
+                  💾 AUTO-SAVING IN PROGRESS...
+                </span>
+              ) : (
+                <span title="Seeing 💾 icon means auto-save is actively persisting changes in real time">
+                  ⚡ AUTO-SAVE ACTIVE
+                </span>
+              )
+            ) : (
+              'MANUAL SAVE MODE'
+            )}
           </span>
         </div>
 
@@ -116,7 +128,7 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
 
             <BrutalButton variant="pink" size="sm" onClick={onOpenSettings}>
               <Sliders className="w-3.5 h-3.5" />
-              Design & Fonts
+              Customization & Design
             </BrutalButton>
 
             <BrutalButton variant="yellow" size="sm" onClick={onOpenDrawer}>
@@ -128,7 +140,7 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
               href="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 bg-white border-2 border-black font-bold text-xs hover:bg-slate-100 flex items-center gap-1 text-black shadow-[2px_2px_0px_0px_#000]"
+              className="p-1.5 bg-white border-2 border-black font-bold text-xs hover:bg-slate-100 flex items-center gap-1 text-black shadow-[2px_2px_0px_0px_#000] cursor-pointer"
               title="Open Public Site"
             >
               <ExternalLink className="w-3.5 h-3.5" />
@@ -161,42 +173,42 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
         <div className="xl:hidden mt-2 pt-2 border-t-2 border-slate-700 grid grid-cols-2 sm:grid-cols-4 gap-2 animate-in fade-in slide-in-from-top-1 duration-150">
           <button
             onClick={() => { onOpenAIOnboarding(); setIsMobileMenuOpen(false); }}
-            className="px-2.5 py-1.5 bg-pink-400 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000]"
+            className="px-2.5 py-1.5 bg-pink-400 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
           >
             <Sparkles className="w-3.5 h-3.5" /> AI Onboard
           </button>
 
           <button
             onClick={() => { onOpenAddCard(); setIsMobileMenuOpen(false); }}
-            className="px-2.5 py-1.5 bg-yellow-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000]"
+            className="px-2.5 py-1.5 bg-yellow-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
           >
             <Plus className="w-3.5 h-3.5" /> Add Card
           </button>
 
           <button
             onClick={() => { onOpenAnalytics(); setIsMobileMenuOpen(false); }}
-            className="px-2.5 py-1.5 bg-cyan-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000]"
+            className="px-2.5 py-1.5 bg-cyan-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
           >
             <BarChart2 className="w-3.5 h-3.5" /> Analytics
           </button>
 
           <button
             onClick={() => { onOpenCheckpoints(); setIsMobileMenuOpen(false); }}
-            className="px-2.5 py-1.5 bg-emerald-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000]"
+            className="px-2.5 py-1.5 bg-emerald-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
           >
             <Bookmark className="w-3.5 h-3.5" /> Checkpoints
           </button>
 
           <button
             onClick={() => { onOpenSettings(); setIsMobileMenuOpen(false); }}
-            className="px-2.5 py-1.5 bg-purple-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000]"
+            className="px-2.5 py-1.5 bg-purple-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
           >
-            <Sliders className="w-3.5 h-3.5" /> Design & Fonts
+            <Sliders className="w-3.5 h-3.5" /> Customization & Design
           </button>
 
           <button
             onClick={() => { onOpenDrawer(); setIsMobileMenuOpen(false); }}
-            className="px-2.5 py-1.5 bg-orange-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000]"
+            className="px-2.5 py-1.5 bg-orange-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
           >
             <Edit3 className="w-3.5 h-3.5" /> Drawer
           </button>
@@ -206,14 +218,14 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="px-2.5 py-1.5 bg-white text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000]"
+            className="px-2.5 py-1.5 bg-white text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
           >
             <ExternalLink className="w-3.5 h-3.5" /> Public Site
           </a>
 
           <button
             onClick={() => { onLogout(); setIsMobileMenuOpen(false); }}
-            className="px-2.5 py-1.5 bg-red-500 text-white border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000]"
+            className="px-2.5 py-1.5 bg-red-500 text-white border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
           >
             <LogOut className="w-3.5 h-3.5" /> Logout
           </button>
