@@ -102,15 +102,21 @@ export const HeroProfileCard: React.FC<HeroProfileCardProps> = ({
                 isEditingActive={isEditingActive}
               />
             </div>
+          </div>
+        </div>
 
-            <div className="text-xs md:text-sm text-slate-700 dark:text-slate-300 font-medium leading-relaxed pt-1">
-              <InlineText
-                value={profile.bio}
-                onChange={(val) => updateField('bio', val)}
-                isEditingActive={isEditingActive}
-                multiline
-              />
-            </div>
+        {/* Separate Full-Width Profile Summary Entity */}
+        <div className="w-full mt-4 pt-3 border-t-2 border-black/15 dark:border-white/15">
+          <h4 className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+            /// PROFILE SUMMARY
+          </h4>
+          <div className="text-xs md:text-sm text-slate-800 dark:text-slate-200 font-medium leading-relaxed">
+            <InlineText
+              value={profile.bio}
+              onChange={(val) => updateField('bio', val)}
+              isEditingActive={isEditingActive}
+              multiline
+            />
           </div>
         </div>
       </div>
