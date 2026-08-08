@@ -7,7 +7,7 @@ import { Footer } from '@/components/layout/Footer';
 import { BentoGrid } from '@/components/bento/BentoGrid';
 import { StealthLoginModal } from '@/components/admin/StealthLoginModal';
 import { useRouter } from 'next/navigation';
-import { FONT_PRESETS, ANALYTICS_EVENTS, SHORTCUT_KEYS } from '@/lib/constants';
+import { FONT_PRESETS, ANALYTICS_EVENTS, SHORTCUT_KEYS, STORAGE_KEYS } from '@/lib/constants';
 import { getThemePreset } from '@/lib/colorPalettes';
 
 export default function Home() {
