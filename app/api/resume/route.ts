@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 import { v2 as cloudinary } from 'cloudinary';
 import config from '@/config';
 import { ApiResponse } from '@/lib/apiResponse';
-import { CLOUDINARY_CONSTANTS } from '@/lib/constants';
+import { CLOUDINARY_CONSTANTS, DATABASE_CONSTANTS } from '@/lib/constants';
 
 // Configure Cloudinary if keys exist
 if (config.cloudinary.cloudName && config.cloudinary.apiKey && config.cloudinary.apiSecret) {
@@ -12,6 +14,41 @@ if (config.cloudinary.cloudName && config.cloudinary.apiKey && config.cloudinary
     api_secret: config.cloudinary.apiSecret,
     secure: true,
   });
+}
+
+function getLocalResumePaths() {
+  const storageDir = path.join(process.cwd(), DATABASE_CONSTANTS.STORAGE_DIR);
+  const localPath = path.join(storageDir, 'resume.pdf');
+  const tmpPath = path.join('/tmp', 'resume.pdf');
+  return { storageDir, localPath, tmpPath };
+}
+
+export async function GET() {
+  const { localPath, tmpPath } = getLocalResumePaths();
+
+  let targetPath: string | null = null;
+  if (fs.existsSync(localPath)) {
+    targetPath = localPath;
+  } else if (fs.existsSync(tmpPath)) {
+    targetPath = tmpPath;
+  }
+
+  if (targetPath) {
+    try {
+      const fileBuffer = fs.readFileSync(targetPath);
+      return new NextResponse(fileBuffer, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': 'inline; filename="Resume.pdf"',
+          'Cache-Control': 'public, max-age=3600, must-revalidate',
+        },
+      });
+    } catch (err) {
+      console.error('Error reading local resume file:', err);
+    }
+  }
+
+  return ApiResponse.error('Resume document not found.', 404);
 }
 
 export async function POST(request: Request) {
@@ -34,13 +71,13 @@ export async function POST(request: Request) {
             folder: CLOUDINARY_CONSTANTS.RESUME_FOLDER,
             resource_type: CLOUDINARY_CONSTANTS.RESOURCE_TYPES.AUTO,
             public_id: `resume_${Date.now()}`,
+            format: 'pdf',
           },
           (error, result) => {
             if (error || !result) {
-              console.warn('Cloudinary upload error:', error);
-              // Fallback to base64 data URL
-              const base64 = `data:${file.type};base64,${buffer.toString('base64')}`;
-              resolve(ApiResponse.success({ url: base64, source: 'base64_fallback' }));
+              console.warn('Cloudinary upload error, falling back to local file storage:', error);
+              saveFileLocally(buffer);
+              resolve(ApiResponse.success({ url: '/api/resume', source: 'local_storage' }));
             } else {
               resolve(
                 ApiResponse.success({
@@ -56,9 +93,9 @@ export async function POST(request: Request) {
       });
     }
 
-    // Local Base64 fallback if Cloudinary is not configured
-    const base64 = `data:${file.type};base64,${buffer.toString('base64')}`;
-    return ApiResponse.success({ url: base64, source: 'base64_fallback' });
+    // Save locally and serve via /api/resume
+    saveFileLocally(buffer);
+    return ApiResponse.success({ url: '/api/resume', source: 'local_storage' });
   } catch (error: unknown) {
     const err = error as Error;
     console.error('Resume upload error:', err);
@@ -66,17 +103,39 @@ export async function POST(request: Request) {
   }
 }
 
+function saveFileLocally(buffer: Buffer) {
+  const { storageDir, localPath, tmpPath } = getLocalResumePaths();
+
+  try {
+    if (!fs.existsSync(storageDir)) {
+      fs.mkdirSync(storageDir, { recursive: true });
+    }
+    fs.writeFileSync(localPath, buffer);
+  } catch {
+    try {
+      const tmpDir = path.dirname(tmpPath);
+      if (!fs.existsSync(tmpDir)) {
+        fs.mkdirSync(tmpDir, { recursive: true });
+      }
+      fs.writeFileSync(tmpPath, buffer);
+    } catch (tmpErr) {
+      console.warn('Failed to save resume buffer to local filesystem:', tmpErr);
+    }
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
-    const { publicId } = await request.json();
+    const body = await request.json().catch(() => ({}));
+    const publicId = body.publicId;
 
-    if (!publicId) {
-      return ApiResponse.error('Public ID is required to delete Cloudinary asset.', 400);
-    }
-
-    if (config.cloudinary.cloudName && config.cloudinary.apiKey && config.cloudinary.apiSecret) {
+    if (publicId && config.cloudinary.cloudName && config.cloudinary.apiKey && config.cloudinary.apiSecret) {
       await cloudinary.uploader.destroy(publicId, { resource_type: CLOUDINARY_CONSTANTS.RESOURCE_TYPES.RAW });
     }
+
+    const { localPath, tmpPath } = getLocalResumePaths();
+    if (fs.existsSync(localPath)) fs.unlinkSync(localPath);
+    if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
 
     return ApiResponse.success(null, 'Resume file deleted successfully.');
   } catch (error: unknown) {
