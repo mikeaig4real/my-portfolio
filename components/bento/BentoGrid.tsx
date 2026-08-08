@@ -220,13 +220,6 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
     onUpdateCards(reorderedWithIndices);
   };
 
-  const handleUpdateCardTargetId = (cardId: string, targetId: string) => {
-    if (!onUpdateCards) return;
-    onUpdateCards(
-      data.cards.map((c) => (c.id === cardId ? { ...c, targetId } : c))
-    );
-  };
-
   const renderCardContent = (card: BentoCardConfig) => {
     const cardTitle = card.title;
     const onUpdateCardTitle = (newTitle: string) => handleUpdateCardTitle(card.id, newTitle);
@@ -264,12 +257,10 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
         return (
           <ProjectCard
             project={proj}
-            projects={data.projects}
             accentColor={card.accentColor}
             cardTitle={cardTitle}
             onUpdateCardTitle={onUpdateCardTitle}
             isEditingActive={isEditingActive}
-            onSelectTargetId={(newTargetId) => handleUpdateCardTargetId(card.id, newTargetId)}
             onUpdateProject={(updatedProj) => {
               if (onUpdateProjects) {
                 onUpdateProjects(
