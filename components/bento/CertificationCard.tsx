@@ -28,11 +28,19 @@ export const CertificationCard: React.FC<CertificationCardProps> = ({
   const issuer = customContent?.issuer || 'Certification Authority / Training';
   const issueDate = customContent?.issueDate || '2025';
   const credentialUrl = customContent?.credentialUrl || '';
+  const hasValidUrl = Boolean(credentialUrl && credentialUrl.trim() !== '' && credentialUrl !== 'https://');
 
   const updateField = (field: keyof BentoCustomContent, val: string) => {
     if (onUpdateContent) {
       onUpdateContent({ ...customContent, [field]: val });
     }
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (isEditingActive || !hasValidUrl) return;
+    // Don't trigger if user clicked an interactive child button
+    if ((e.target as HTMLElement).closest('button, a, input')) return;
+    window.open(credentialUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -42,7 +50,10 @@ export const CertificationCard: React.FC<CertificationCardProps> = ({
       badge="VERIFIED"
       isEditingActive={isEditingActive}
       onUpdateTitle={onUpdateCardTitle}
-      className="h-full flex flex-col justify-between"
+      onClick={handleCardClick}
+      className={`h-full flex flex-col justify-between ${
+        hasValidUrl && !isEditingActive ? 'cursor-pointer hover:brightness-105' : ''
+      }`}
     >
       <div className="space-y-3">
         <div className="flex items-start gap-3">
