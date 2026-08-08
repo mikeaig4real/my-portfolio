@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Outfit:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,800;0,900;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,700&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --bg-main: #f8fafc;
+    --text-main: #090d16;
+    --brutal-black: #000000;
+    --brutal-yellow: #facc15;
+    --brutal-pink: #ff70a6;
+    --brutal-cyan: #70d6ff;
+    --brutal-lime: #a7f3d0;
+    --brutal-purple: #d8b4fe;
+    --brutal-orange: #ff9f1c;
+  }
+
+  .dark {
+    --bg-main: #0f172a;
+    --text-main: #f8fafc;
+    --brutal-black: #ffffff;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .dark body {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  }
+}
+
+/* Custom Neobrutalism Utility Classes */
+.brutal-card {
+  border: 3px solid var(--brutal-black);
+  background-color: #ffffff;
+  box-shadow: 5px 5px 0px 0px var(--brutal-black);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dark .brutal-card {
+  background-color: #1e293b;
+  box-shadow: 5px 5px 0px 0px #ffffff;
+}
+
+.brutal-card-hover {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.brutal-card-hover:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 8px 8px 0px 0px var(--brutal-black);
+}
+
+.dark .brutal-card-hover:hover {
+  box-shadow: 8px 8px 0px 0px #ffffff;
+}
+
+.brutal-btn {
+  border: 3px solid #000000;
+  background-color: var(--brutal-yellow);
+  color: #000000;
+  font-weight: 700;
+  box-shadow: 4px 4px 0px 0px #000000;
+  transition: all 0.1s ease-in-out;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.brutal-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px #000000;
+}
+
+.brutal-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px 0px #000000;
+}
+
+.dark .brutal-btn {
+  border-color: #ffffff;
+  box-shadow: 4px 4px 0px 0px #ffffff;
+}
+
+.dark .brutal-btn:hover {
+  box-shadow: 6px 6px 0px 0px #ffffff;
+}
+
+.dark .brutal-btn:active {
+  box-shadow: 1px 1px 0px 0px #ffffff;
+}
+
+/* Badge styles */
+.brutal-badge {
+  border: 2px solid #000000;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.55rem;
+  box-shadow: 2px 2px 0px 0px #000000;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dark .brutal-badge {
+  border-color: #ffffff;
+  box-shadow: 2px 2px 0px 0px #ffffff;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-left: 2px solid #000;
+}
+::-webkit-scrollbar-thumb {
+  background: #facc15;
+  border: 2px solid #000;
+}
