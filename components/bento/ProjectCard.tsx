@@ -11,23 +11,19 @@ import { CompactProjectView } from './project/CompactProjectView';
 
 interface ProjectCardProps {
   project: Project;
-  projects?: Project[];
   accentColor?: string;
   cardTitle?: string;
   onUpdateCardTitle?: (newTitle: string) => void;
   isEditingActive?: boolean;
-  onSelectTargetId?: (targetId: string) => void;
   onUpdateProject?: (updated: Project) => void;
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
-  projects,
   accentColor,
   cardTitle,
   onUpdateCardTitle,
   isEditingActive = false,
-  onSelectTargetId,
   onUpdateProject,
 }) => {
   const cardAccent = accentColor || project.accentColor || '#70d6ff';

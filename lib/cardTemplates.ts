@@ -1,8 +1,7 @@
-import React from 'react';
 import { nanoid } from 'nanoid';
 import { faker } from '@faker-js/faker';
 import { BentoCardConfig, BentoCardType, Project, ProjectViewType } from '@/types/portfolio';
-import { SINGLETON_CARD_TYPES, CARD_TYPE_BOUNDS, BENTO_CARD_TYPES, PROJECT_VIEW_TYPES } from '@/lib/constants';
+import { CARD_TYPE_BOUNDS, BENTO_CARD_TYPES, PROJECT_VIEW_TYPES } from '@/lib/constants';
 
 export interface CardTemplateOption {
   type: BentoCardType;
