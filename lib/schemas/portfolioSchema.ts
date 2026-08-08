@@ -175,10 +175,11 @@ export function reconcilePortfolioData(data: unknown): PortfolioData {
     projects: reconciledProjects,
     skills: reconciledSkills,
     socials: reconciledSocials,
-  };
+    customization: parsed.customization || defaultPortfolioData.customization,
+  } as unknown as PortfolioData;
 }
 
-export function validatePortfolioData(data: unknown): PortfolioDataZod {
+export function validatePortfolioData(data: unknown): PortfolioData {
   return reconcilePortfolioData(data);
 }
 
