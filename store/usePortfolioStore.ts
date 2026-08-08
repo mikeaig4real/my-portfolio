@@ -121,7 +121,25 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
   },
 
   savePortfolio: async (updatedData?: PortfolioData) => {
-    const targetData = updatedData || get().data;
+    const currentData = get().data;
+    const targetData = updatedData || currentData;
+
+    // Create an automatic rollback checkpoint snapshot before auto-saving
+    if (get().autoSaveEnabled) {
+      const rollbackCheckpoint: CheckpointSnapshot = {
+        id: `auto-rollback-${Date.now()}`,
+        name: `🔄 Auto-Save Rollback (${new Date().toLocaleTimeString()})`,
+        timestamp: new Date().toISOString(),
+        data: JSON.parse(JSON.stringify(currentData)),
+      };
+      const existingCkpts = get().checkpoints || [];
+      const updatedCkpts = [rollbackCheckpoint, ...existingCkpts].slice(0, 15);
+      set({ checkpoints: updatedCkpts });
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEYS.CHECKPOINTS, JSON.stringify(updatedCkpts));
+      }
+    }
+
     set({ data: targetData });
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.PORTFOLIO_DRAFT, JSON.stringify(targetData));
