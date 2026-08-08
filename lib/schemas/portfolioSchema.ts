@@ -128,12 +128,13 @@ export const PortfolioDataSchema = z.object({
 
 import { defaultPortfolioData } from '@/lib/defaultData';
 import { SINGLETON_CARD_TYPES } from '@/lib/constants';
+import { PortfolioData, BentoCardConfig, Project } from '@/types/portfolio';
 
 export type PortfolioDataZod = z.infer<typeof PortfolioDataSchema>;
 
-export function reconcilePortfolioData(data: unknown): PortfolioDataZod {
+export function reconcilePortfolioData(data: unknown): PortfolioData {
   if (!data || typeof data !== 'object') {
-    return PortfolioDataSchema.parse(defaultPortfolioData);
+    return defaultPortfolioData;
   }
 
   const parsed = PortfolioDataSchema.parse(data);
@@ -145,7 +146,7 @@ export function reconcilePortfolioData(data: unknown): PortfolioDataZod {
   };
 
   // 2. Reconcile cards array: ensure all singleton cards exist
-  let reconciledCards = [...parsed.cards];
+  let reconciledCards: BentoCardConfig[] = (parsed.cards || []) as BentoCardConfig[];
   if (reconciledCards.length === 0) {
     reconciledCards = [...defaultPortfolioData.cards];
   } else {
@@ -162,7 +163,7 @@ export function reconcilePortfolioData(data: unknown): PortfolioDataZod {
 
   // 3. Fallback for empty collections if missing from older data versions
   const reconciledWorkplaces = parsed.workplaces.length > 0 ? parsed.workplaces : defaultPortfolioData.workplaces;
-  const reconciledProjects = parsed.projects.length > 0 ? parsed.projects : defaultPortfolioData.projects;
+  const reconciledProjects: Project[] = (parsed.projects.length > 0 ? parsed.projects : defaultPortfolioData.projects) as Project[];
   const reconciledSkills = parsed.skills.length > 0 ? parsed.skills : defaultPortfolioData.skills;
   const reconciledSocials = parsed.socials.length > 0 ? parsed.socials : defaultPortfolioData.socials;
 
