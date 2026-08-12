@@ -68,6 +68,7 @@ export const EditDrawer: React.FC<EditDrawerProps> = ({
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.6 }}
@@ -76,17 +77,33 @@ export const EditDrawer: React.FC<EditDrawerProps> = ({
             className="fixed inset-0 bg-black z-40 cursor-pointer"
           />
 
+          {/* Drawer panel — bottom sheet on mobile, right panel on sm+ */}
           <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed top-0 right-0 h-full w-full max-w-2xl bg-white dark:bg-slate-900 border-l-4 border-black dark:border-white shadow-[-10px_0px_0px_0px_#000] z-50 flex flex-col justify-between"
+            // Mobile: slide up from bottom
+            // sm+: slide in from right
+            initial={{ y: '100%', x: 0 }}
+            animate={{ y: 0, x: 0 }}
+            exit={{ y: '100%', x: 0 }}
+            // Override for sm+ screens via a class instead of framer so we don't need media queries in JS
+            className="
+              fixed bottom-0 left-0 right-0 z-50 flex flex-col
+              h-[82vh] w-full
+              sm:top-0 sm:right-0 sm:left-auto sm:bottom-auto sm:h-full sm:w-full sm:max-w-2xl
+              bg-white dark:bg-slate-900
+              border-t-4 sm:border-t-0 sm:border-l-4 border-black dark:border-white
+              shadow-[0px_-6px_0px_0px_#000] sm:shadow-[-10px_0px_0px_0px_#000]
+            "
+            style={{ transition: 'none' }}
           >
+            {/* Mobile drag handle */}
+            <div className="sm:hidden flex justify-center pt-2 pb-1 shrink-0">
+              <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+            </div>
+
             <EditDrawerHeader onClose={onClose} />
             <EditDrawerTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-            <div className="flex-1 p-5 overflow-y-auto">
+            <div className="flex-1 p-4 sm:p-5 overflow-y-auto overscroll-contain">
               {activeTab === 'profile' && (
                 <ProfileEditor
                   profile={draftData.profile}

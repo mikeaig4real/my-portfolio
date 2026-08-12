@@ -160,7 +160,7 @@ export const HeroProfileCard: React.FC<HeroProfileCardProps> = ({
             onClick={onOpenResumeManager}
           >
             <Upload className="w-4 h-4 stroke-[2.5]" />
-            + Add Resume / CV
+            Add Resume / CV
           </BrutalButton>
         ) : null}
 

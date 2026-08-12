@@ -126,6 +126,8 @@ export interface BentoCustomizationConfig {
   enableAnimations: boolean;
   fontFamily?: string;
   autoSaveEnabled?: boolean;
+  /** Text shown in the branding badge on the footer, e.g. "NEOBRUTALISM v2.0" */
+  footerBadgeText?: string;
 }
 
 export interface PortfolioData {

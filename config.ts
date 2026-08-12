@@ -31,6 +31,13 @@ const envSchema = z.object({
     .string()
     .min(1, 'NEXT_PUBLIC_ADMIN_SESSION_COOKIE_NAME environment variable is required for security'),
 
+  // Operational & debouncing constants
+  NEXT_PUBLIC_AUTO_SAVE_DEBOUNCE_MS: z
+    .string()
+    .optional()
+    .transform((val) => (val && !isNaN(Number(val)) ? Number(val) : 1500))
+    .default('1500'),
+
   // Non-security operational constants
   MONGODB_URI: z.string().min(1).default('mongodb://127.0.0.1:27017/my_portfolio_db'),
   DATABASE_PROVIDER: z.enum(['mongodb', 'sqlite']).default('sqlite'),
@@ -56,6 +63,7 @@ const parsed = envSchema.safeParse({
   ADMIN_SESSION_TOKEN_VALUE: process.env.ADMIN_SESSION_TOKEN_VALUE,
   NEXT_PUBLIC_ADMIN_UNLOCK_KEY: process.env.NEXT_PUBLIC_ADMIN_UNLOCK_KEY,
   NEXT_PUBLIC_ADMIN_SESSION_COOKIE_NAME: process.env.NEXT_PUBLIC_ADMIN_SESSION_COOKIE_NAME,
+  NEXT_PUBLIC_AUTO_SAVE_DEBOUNCE_MS: process.env.NEXT_PUBLIC_AUTO_SAVE_DEBOUNCE_MS,
   MONGODB_URI: process.env.MONGODB_URI,
   DATABASE_PROVIDER: process.env.DATABASE_PROVIDER,
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
@@ -111,6 +119,7 @@ export const config = {
     env: parsed.data.NODE_ENV,
     port: parsed.data.PORT,
     projectName: parsed.data.PROJECT_NAME,
+    autoSaveDebounceMs: (parsed.data.NEXT_PUBLIC_AUTO_SAVE_DEBOUNCE_MS as unknown as number) || 1500,
   },
 } as const;
 

@@ -100,7 +100,7 @@ export const EditableTagList: React.FC<EditableTagListProps> = ({
             title="Add Technology Tag"
           >
             <Plus className="w-3 h-3 stroke-3" />
-            <span>+ Tech</span>
+            <span>Tag</span>
           </button>
         )
       )}

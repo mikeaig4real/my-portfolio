@@ -6,6 +6,7 @@ export const APP_CONSTANTS = {
   TITLE: 'Neobrutalist Bento Portfolio',
   DEFAULT_PORT: config.app.port,
   DEFAULT_ENV: config.app.env,
+  AUTO_SAVE_DEBOUNCE_MS: config.app.autoSaveDebounceMs,
   GRACE_PERIOD_DAYS: 3,
   MAX_RECENT_EVENTS: 50,
 } as const;

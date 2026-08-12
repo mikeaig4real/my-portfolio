@@ -128,6 +128,7 @@ const BentoCustomizationConfigSchema = new Schema(
     enableAnimations: { type: Boolean, default: true },
     fontFamily: { type: String, default: "inter" },
     autoSaveEnabled: { type: Boolean, default: true },
+    footerBadgeText: { type: String, default: "NEOBRUTALISM v2.0" },
   },
   { _id: false },
 );

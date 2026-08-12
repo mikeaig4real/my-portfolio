@@ -22,7 +22,9 @@ export const FooterEditorModal: React.FC<FooterEditorModalProps> = ({
   onSave,
 }) => {
   const [draftSocials, setDraftSocials] = useState<SocialLink[]>(data.socials);
-  const [draftBadgeText, setDraftBadgeText] = useState<string>('NEOBRUTALISM v2.0');
+  const [draftBadgeText, setDraftBadgeText] = useState<string>(
+    data.customization?.footerBadgeText || 'NEOBRUTALISM v2.0'
+  );
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
@@ -30,13 +32,29 @@ export const FooterEditorModal: React.FC<FooterEditorModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setDraftSocials(data.socials);
+      setDraftBadgeText(data.customization?.footerBadgeText || 'NEOBRUTALISM v2.0');
     }
-  }, [isOpen, data.socials]);
+  }, [isOpen, data.socials, data.customization]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      await onSave({ ...data, socials: draftSocials });
+      await onSave({
+        ...data,
+        socials: draftSocials,
+        customization: {
+          ...data.customization,
+          // These are required fields — fall back to sensible defaults if customization is missing
+          layoutMode: data.customization?.layoutMode || 'bento',
+          gridColumns: data.customization?.gridColumns ?? 4,
+          gridGap: data.customization?.gridGap ?? 16,
+          shadowOffset: data.customization?.shadowOffset ?? 4,
+          borderWidth: data.customization?.borderWidth ?? 2,
+          colorScheme: data.customization?.colorScheme || 'cyber_yellow',
+          enableAnimations: data.customization?.enableAnimations ?? true,
+          footerBadgeText: draftBadgeText,
+        },
+      });
       setSavedSuccess(true);
       setTimeout(() => {
         setSavedSuccess(false);

@@ -100,7 +100,7 @@ export default function Home() {
         )}
       </main>
 
-      <Footer />
+      <Footer onSecretAdminTap={() => setIsLoginOpen(true)} />
 
       <StealthLoginModal
         isOpen={isLoginOpen}

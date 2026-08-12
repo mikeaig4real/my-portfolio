@@ -114,6 +114,8 @@ export const CustomizationSchema = z.object({
   fontFamily: z.string().nullish().transform(v => v || 'font-mono'),
   // Default false so auto-save must be explicitly enabled by the user
   autoSaveEnabled: z.boolean().nullish().transform(v => v ?? false),
+  // Optional branding text shown in the footer badge
+  footerBadgeText: z.string().nullish().transform(v => v || 'NEOBRUTALISM v2.0'),
 });
 
 export const PortfolioDataSchema = z.object({

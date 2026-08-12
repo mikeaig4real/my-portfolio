@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { PortfolioData, CheckpointSnapshot } from '@/types/portfolio';
 import { defaultPortfolioData } from '@/lib/defaultData';
 import { randomizeCardColors } from '@/lib/colorPalettes';
-import { STORAGE_KEYS } from '@/lib/constants';
+import { STORAGE_KEYS, APP_CONSTANTS } from '@/lib/constants';
 import { logger } from '@/lib/logger';
 
 export interface PortfolioState {
@@ -32,6 +32,8 @@ function sanitizePortfolioData(data: PortfolioData): PortfolioData {
   return clean as unknown as PortfolioData;
 }
 
+let autoSaveDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
 export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
   data: defaultPortfolioData,
   loading: true,
@@ -43,9 +45,23 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
   setIsDrawerOpen: (open: boolean) => set({ isDrawerOpen: open }),
 
   setData: (updatedData: PortfolioData) => {
-    set({ data: updatedData });
+    const sanitized = sanitizePortfolioData(updatedData);
+    set({ data: sanitized });
+
+    // Always update localStorage instantly (0ms delay) so UI & refreshes are bulletproof
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.PORTFOLIO_DRAFT, JSON.stringify(sanitized));
+    }
+
+    // Debounce the heavy server API network sync & checkpoint creation by 1500ms
     if (get().autoSaveEnabled) {
-      get().savePortfolio(updatedData);
+      if (autoSaveDebounceTimer) {
+        clearTimeout(autoSaveDebounceTimer);
+      }
+      autoSaveDebounceTimer = setTimeout(() => {
+        autoSaveDebounceTimer = null;
+        get().savePortfolio(sanitized);
+      }, APP_CONSTANTS.AUTO_SAVE_DEBOUNCE_MS);
     }
   },
 
@@ -54,6 +70,10 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
    * `data.customization.autoSaveEnabled` so it survives a DB round-trip.
    */
   setAutoSaveEnabled: (enabled: boolean) => {
+    if (!enabled && autoSaveDebounceTimer) {
+      clearTimeout(autoSaveDebounceTimer);
+      autoSaveDebounceTimer = null;
+    }
     const currentData = get().data;
     const updatedData: PortfolioData = {
       ...currentData,
@@ -170,6 +190,12 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
   },
 
   savePortfolio: async (updatedData?: PortfolioData) => {
+    // Clear any queued debounced save timer since we are executing a save immediately now
+    if (autoSaveDebounceTimer) {
+      clearTimeout(autoSaveDebounceTimer);
+      autoSaveDebounceTimer = null;
+    }
+
     const currentData = get().data;
     // Always sanitize to ensure checkpoints NEVER reach the DB
     const targetData = sanitizePortfolioData(updatedData || currentData);

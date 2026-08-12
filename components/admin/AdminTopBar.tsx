@@ -98,7 +98,7 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
             size="sm"
             onClick={onSave}
             disabled={saving}
-            className="text-[11px] px-2 py-1"
+            className="text-[11px] px-2 py-1.5 min-h-10"
           >
             <Save className="w-3.5 h-3.5" />
             <span>{saving ? 'Saving...' : savedSuccess ? 'Saved!' : 'Save'}</span>
@@ -159,7 +159,7 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
           {/* Mobile & Tablet Action Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="xl:hidden p-1.5 bg-yellow-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1 cursor-pointer shadow-[2px_2px_0px_0px_#000]"
+            className="xl:hidden p-2 min-h-10 bg-yellow-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1 cursor-pointer shadow-[2px_2px_0px_0px_#000]"
           >
             {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             <span className="hidden sm:inline">Tools</span>
@@ -170,45 +170,45 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
 
       {/* Collapsible Mobile & Tablet Tools Dropdown Bar */}
       {isMobileMenuOpen && (
-        <div className="xl:hidden mt-2 pt-2 border-t-2 border-slate-700 grid grid-cols-2 sm:grid-cols-4 gap-2 animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="xl:hidden mt-2 pt-2 border-t-2 border-slate-700 grid grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-1 duration-150">
           <button
             onClick={() => { onOpenAIOnboarding(); setIsMobileMenuOpen(false); }}
-            className="px-2.5 py-1.5 bg-pink-400 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
+            className="px-3 py-3 min-h-11 bg-pink-400 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer active:scale-[0.97] transition-transform"
           >
             <Sparkles className="w-3.5 h-3.5" /> AI Onboard
           </button>
 
           <button
             onClick={() => { onOpenAddCard(); setIsMobileMenuOpen(false); }}
-            className="px-2.5 py-1.5 bg-yellow-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
+            className="px-3 py-3 min-h-11 bg-yellow-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer active:scale-[0.97] transition-transform"
           >
             <Plus className="w-3.5 h-3.5" /> Add Card
           </button>
 
           <button
             onClick={() => { onOpenAnalytics(); setIsMobileMenuOpen(false); }}
-            className="px-2.5 py-1.5 bg-cyan-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
+            className="px-3 py-3 min-h-11 bg-cyan-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer active:scale-[0.97] transition-transform"
           >
             <BarChart2 className="w-3.5 h-3.5" /> Analytics
           </button>
 
           <button
             onClick={() => { onOpenCheckpoints(); setIsMobileMenuOpen(false); }}
-            className="px-2.5 py-1.5 bg-emerald-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
+            className="px-3 py-3 min-h-11 bg-emerald-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer active:scale-[0.97] transition-transform"
           >
             <Bookmark className="w-3.5 h-3.5" /> Checkpoints
           </button>
 
           <button
             onClick={() => { onOpenSettings(); setIsMobileMenuOpen(false); }}
-            className="px-2.5 py-1.5 bg-purple-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
+            className="px-3 py-3 min-h-11 bg-purple-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer active:scale-[0.97] transition-transform"
           >
             <Sliders className="w-3.5 h-3.5" /> Customization & Design
           </button>
 
           <button
             onClick={() => { onOpenDrawer(); setIsMobileMenuOpen(false); }}
-            className="px-2.5 py-1.5 bg-orange-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
+            className="px-3 py-3 min-h-11 bg-orange-300 text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer active:scale-[0.97] transition-transform"
           >
             <Edit3 className="w-3.5 h-3.5" /> Drawer
           </button>
@@ -218,14 +218,14 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="px-2.5 py-1.5 bg-white text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
+            className="px-3 py-3 min-h-11 bg-white text-black border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer active:scale-[0.97] transition-transform"
           >
             <ExternalLink className="w-3.5 h-3.5" /> Public Site
           </a>
 
           <button
             onClick={() => { onLogout(); setIsMobileMenuOpen(false); }}
-            className="px-2.5 py-1.5 bg-red-500 text-white border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer hover:scale-[1.02] transition-transform"
+            className="px-3 py-3 min-h-11 bg-red-500 text-white border-2 border-black font-extrabold text-xs flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer active:scale-[0.97] transition-transform"
           >
             <LogOut className="w-3.5 h-3.5" /> Logout
           </button>

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Briefcase, Calendar, MapPin } from 'lucide-react';
+import { Briefcase, Calendar, MapPin, Plus } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { Workplace } from '@/types/portfolio';
 import { BrutalCard } from '@/components/ui/BrutalCard';
@@ -101,9 +101,10 @@ export const WorkplaceCard: React.FC<WorkplaceCardProps> = ({
           {isEditingActive && (
             <button
               onClick={handleAddRole}
-              className="px-2 py-1 bg-yellow-300 text-black border-2 border-black text-xs font-mono font-bold hover:bg-yellow-400 cursor-pointer whitespace-nowrap"
+              className="px-2 py-1 bg-yellow-300 text-black border-2 border-black text-xs font-mono font-bold hover:bg-yellow-400 cursor-pointer whitespace-nowrap flex items-center gap-1"
             >
-              + Add Role
+              <Plus className="w-3 h-3 stroke-3" />
+              Add Role
             </button>
           )}
         </div>
