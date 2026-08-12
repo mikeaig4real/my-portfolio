@@ -3,7 +3,7 @@ import { PortfolioData, CheckpointSnapshot } from '@/types/portfolio';
 import { defaultPortfolioData } from '@/lib/defaultData';
 import { randomizeCardColors } from '@/lib/colorPalettes';
 import { STORAGE_KEYS } from '@/lib/constants';
-import { logger } from "@/lib/logger";
+import { logger } from '@/lib/logger';
 
 export interface PortfolioState {
   data: PortfolioData;
@@ -25,6 +25,13 @@ export interface PortfolioState {
   deleteCheckpoint: (checkpointId: string) => void;
 }
 
+/** Strips any accidental `checkpoints` key before sending data to the API / DB */
+function sanitizePortfolioData(data: PortfolioData): PortfolioData {
+  const clean = Object.assign({}, data as unknown as Record<string, unknown>);
+  delete clean['checkpoints'];
+  return clean as unknown as PortfolioData;
+}
+
 export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
   data: defaultPortfolioData,
   loading: true,
@@ -42,7 +49,30 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
     }
   },
 
-  setAutoSaveEnabled: (enabled: boolean) => set({ autoSaveEnabled: enabled }),
+  /**
+   * Toggles autoSave at the store level AND persists the setting inside
+   * `data.customization.autoSaveEnabled` so it survives a DB round-trip.
+   */
+  setAutoSaveEnabled: (enabled: boolean) => {
+    const currentData = get().data;
+    const updatedData: PortfolioData = {
+      ...currentData,
+      customization: {
+        layoutMode: currentData.customization?.layoutMode || 'bento',
+        gridColumns: currentData.customization?.gridColumns ?? 4,
+        gridGap: currentData.customization?.gridGap ?? 16,
+        shadowOffset: currentData.customization?.shadowOffset ?? 4,
+        borderWidth: currentData.customization?.borderWidth ?? 2,
+        colorScheme: currentData.customization?.colorScheme || 'cyber_yellow',
+        enableAnimations: currentData.customization?.enableAnimations ?? true,
+        fontFamily: currentData.customization?.fontFamily || 'font-mono',
+        autoSaveEnabled: enabled,
+      },
+    };
+    set({ autoSaveEnabled: enabled, data: updatedData });
+    // Persist the setting immediately to DB so it survives page reload
+    get().savePortfolio(updatedData);
+  },
 
   createCheckpoint: (name: string) => {
     const currentData = get().data;
@@ -50,7 +80,8 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
       id: `ckpt-${Date.now()}`,
       name: name || `Checkpoint ${new Date().toLocaleTimeString()}`,
       timestamp: new Date().toISOString(),
-      data: JSON.parse(JSON.stringify(currentData)),
+      // Deep-clone the current data snapshot — checkpoints key must NOT be here
+      data: JSON.parse(JSON.stringify(sanitizePortfolioData(currentData))),
     };
     const updatedCheckpoints = [newCheckpoint, ...(get().checkpoints || [])];
     set({ checkpoints: updatedCheckpoints });
@@ -62,8 +93,13 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
   restoreCheckpoint: (checkpointId: string) => {
     const target = get().checkpoints.find((c) => c.id === checkpointId);
     if (target) {
-      set({ data: target.data });
-      get().savePortfolio(target.data);
+      // Restore data but keep the CURRENT checkpoints list untouched
+      const restoredData = sanitizePortfolioData(target.data);
+      set({ data: restoredData });
+      // Restore autoSave from the customization embedded in that snapshot
+      const autoSave = restoredData.customization?.autoSaveEnabled ?? get().autoSaveEnabled;
+      set({ autoSaveEnabled: autoSave });
+      get().savePortfolio(restoredData);
     }
   },
 
@@ -78,14 +114,14 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
   fetchPortfolio: async () => {
     set({ loading: true });
 
-    // Load checkpoints from localStorage
+    // Always reload checkpoints from localStorage first (they are checkpoint-isolated)
     if (typeof window !== 'undefined') {
       const savedCkpts = localStorage.getItem(STORAGE_KEYS.CHECKPOINTS);
       if (savedCkpts) {
         try {
           set({ checkpoints: JSON.parse(savedCkpts) });
         } catch {
-          // ignore
+          // corrupt data — ignore
         }
       }
     }
@@ -94,24 +130,36 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
       const res = await fetch('/api/portfolio');
       const json = await res.json();
       if (json.success && json.data) {
+        const fetchedData: PortfolioData = sanitizePortfolioData(json.data);
+        // Restore autoSaveEnabled from the persisted customization field
+        const persistedAutoSave = fetchedData.customization?.autoSaveEnabled ?? false;
         set({
-          data: json.data,
+          data: fetchedData,
           dataSource: json.source === 'mongodb' ? 'mongodb' : 'default',
+          autoSaveEnabled: persistedAutoSave,
           loading: false,
         });
         if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEYS.PORTFOLIO_DRAFT, JSON.stringify(json.data));
+          localStorage.setItem(STORAGE_KEYS.PORTFOLIO_DRAFT, JSON.stringify(fetchedData));
         }
         return;
       }
-    } catch {
-      // fallback
+    } catch (err) {
+      logger.warn('Failed to fetch portfolio from API, falling back to localStorage', err);
     }
 
-    const saved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.PORTFOLIO_DRAFT) : null;
+    // Fallback: localStorage draft
+    const saved =
+      typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.PORTFOLIO_DRAFT) : null;
     if (saved) {
       try {
-        set({ data: JSON.parse(saved), dataSource: 'localStorage' });
+        const parsedDraft: PortfolioData = sanitizePortfolioData(JSON.parse(saved));
+        const persistedAutoSave = parsedDraft.customization?.autoSaveEnabled ?? false;
+        set({
+          data: parsedDraft,
+          dataSource: 'localStorage',
+          autoSaveEnabled: persistedAutoSave,
+        });
       } catch {
         set({ data: defaultPortfolioData, dataSource: 'default' });
       }
@@ -123,19 +171,16 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
 
   savePortfolio: async (updatedData?: PortfolioData) => {
     const currentData = get().data;
-    const targetData = updatedData || currentData;
-    console.info({
-      updatedData,
-      currentData,
-    });
+    // Always sanitize to ensure checkpoints NEVER reach the DB
+    const targetData = sanitizePortfolioData(updatedData || currentData);
 
-    // Create an automatic rollback checkpoint snapshot before auto-saving
+    // Create an automatic rollback checkpoint before auto-saving
     if (get().autoSaveEnabled) {
       const rollbackCheckpoint: CheckpointSnapshot = {
         id: `auto-rollback-${Date.now()}`,
         name: `🔄 Auto-Save Rollback (${new Date().toLocaleTimeString()})`,
         timestamp: new Date().toISOString(),
-        data: JSON.parse(JSON.stringify(currentData)),
+        data: JSON.parse(JSON.stringify(sanitizePortfolioData(currentData))),
       };
       const existingCkpts = get().checkpoints || [];
       const updatedCkpts = [rollbackCheckpoint, ...existingCkpts].slice(0, 15);
@@ -154,16 +199,16 @@ export const usePortfolioStore = create<PortfolioState>()((set, get) => ({
       const res = await fetch('/api/portfolio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify(targetData),
       });
       const json = await res.json();
       if (!res.ok || !json.success) {
-        console.warn('API save validation warnings/errors:', json.error, json.details);
+        logger.warn('API save validation warnings/errors', { error: json.error, details: json.details });
       } else if (json.source === 'mongodb') {
         set({ dataSource: 'mongodb' });
       }
     } catch (err) {
-      console.warn('Network or server error while persisting portfolio:', err);
+      logger.warn('Network or server error while persisting portfolio:', err);
     }
   },
 

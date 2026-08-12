@@ -9,5 +9,7 @@ export const portfolioTable = sqliteTable('portfolio_data', {
   socialsJson: text('socials_json').notNull(),
   cardsJson: text('cards_json').notNull(),
   customizationJson: text('customization_json').notNull(),
+  // Top-level colorScheme stored separately for fast reads
+  colorScheme: text('color_scheme').notNull().default('cyber_yellow'),
   updatedAt: integer('updated_at').notNull(),
 });

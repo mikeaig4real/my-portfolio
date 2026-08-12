@@ -29,7 +29,9 @@ export class DrizzleSqliteAdapter implements IDatabaseAdapter {
 
     this.db = drizzle(client);
 
-    // Create table if not exists using constant table name
+    // Create table if not exists — includes colorScheme column.
+    // NOTE: If upgrading an existing DB that lacks the color_scheme column,
+    // run: ALTER TABLE portfolio_data ADD COLUMN color_scheme TEXT NOT NULL DEFAULT 'cyber_yellow';
     await client.execute(`
       CREATE TABLE IF NOT EXISTS ${DATABASE_CONSTANTS.PORTFOLIO_TABLE_NAME} (
         id TEXT PRIMARY KEY,
@@ -40,9 +42,19 @@ export class DrizzleSqliteAdapter implements IDatabaseAdapter {
         socials_json TEXT NOT NULL,
         cards_json TEXT NOT NULL,
         customization_json TEXT NOT NULL,
+        color_scheme TEXT NOT NULL DEFAULT 'cyber_yellow',
         updated_at INTEGER NOT NULL
       );
     `);
+
+    // Best-effort migration: add color_scheme column if missing in existing DBs
+    try {
+      await client.execute(
+        `ALTER TABLE ${DATABASE_CONSTANTS.PORTFOLIO_TABLE_NAME} ADD COLUMN color_scheme TEXT NOT NULL DEFAULT 'cyber_yellow';`
+      );
+    } catch {
+      // Column already exists — ignore
+    }
   }
 
   async getPortfolio(): Promise<PortfolioData> {
@@ -63,6 +75,7 @@ export class DrizzleSqliteAdapter implements IDatabaseAdapter {
       socials: JSON.parse(row.socialsJson),
       cards: JSON.parse(row.cardsJson),
       customization: JSON.parse(row.customizationJson),
+      colorScheme: row.colorScheme || 'cyber_yellow',
     };
 
     return validatePortfolioData(rawData) as unknown as PortfolioData;
@@ -81,6 +94,7 @@ export class DrizzleSqliteAdapter implements IDatabaseAdapter {
       socialsJson: JSON.stringify(validated.socials),
       cardsJson: JSON.stringify(validated.cards),
       customizationJson: JSON.stringify(validated.customization || {}),
+      colorScheme: validated.colorScheme || 'cyber_yellow',
       updatedAt: Date.now(),
     };
 

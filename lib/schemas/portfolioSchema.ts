@@ -109,10 +109,11 @@ export const CustomizationSchema = z.object({
   gridGap: z.number().nullish().transform(v => v ?? 16),
   shadowOffset: z.number().nullish().transform(v => v ?? 4),
   borderWidth: z.number().nullish().transform(v => v ?? 2),
-  colorScheme: z.string().nullish().transform(v => v || 'cyberpunk'),
+  colorScheme: z.string().nullish().transform(v => v || 'cyber_yellow'),
   enableAnimations: z.boolean().nullish().transform(v => v ?? true),
-  fontFamily: z.string().nullish().transform(v => v || 'inter'),
-  autoSaveEnabled: z.boolean().nullish().transform(v => v ?? true),
+  fontFamily: z.string().nullish().transform(v => v || 'font-mono'),
+  // Default false so auto-save must be explicitly enabled by the user
+  autoSaveEnabled: z.boolean().nullish().transform(v => v ?? false),
 });
 
 export const PortfolioDataSchema = z.object({
@@ -122,7 +123,7 @@ export const PortfolioDataSchema = z.object({
   skills: z.array(SkillGroupSchema).nullish().transform(v => v || []),
   socials: z.array(SocialLinkSchema).nullish().transform(v => v || []),
   cards: z.array(BentoCardConfigSchema).nullish().transform(v => v || []),
-  colorScheme: z.string().nullish().transform(v => v || 'cyberpunk'),
+  colorScheme: z.string().nullish().transform(v => v || 'cyber_yellow'),
   customization: CustomizationSchema.nullish(),
 });
 

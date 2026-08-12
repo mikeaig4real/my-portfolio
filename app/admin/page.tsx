@@ -95,18 +95,20 @@ export default function AdminPage() {
 
   const handleSelectFont = (fontId: string) => {
     const updatedCustomization = {
-      ...(data.customization || {
-        layoutMode: 'bento' as const,
-        gridColumns: 4,
-        gridGap: 20,
-        shadowOffset: 4,
-        borderWidth: 2,
-        colorScheme: 'cyber_yellow',
-        enableAnimations: true,
-      }),
+      layoutMode: (data.customization?.layoutMode || 'bento') as 'bento' | 'compact' | 'masonry',
+      gridColumns: data.customization?.gridColumns ?? 4,
+      gridGap: data.customization?.gridGap ?? 20,
+      shadowOffset: data.customization?.shadowOffset ?? 4,
+      borderWidth: data.customization?.borderWidth ?? 2,
+      colorScheme: data.customization?.colorScheme || 'cyber_yellow',
+      enableAnimations: data.customization?.enableAnimations ?? true,
+      autoSaveEnabled: data.customization?.autoSaveEnabled ?? autoSaveEnabled,
       fontFamily: fontId,
     };
-    setData({ ...data, customization: updatedCustomization });
+    const updatedData = { ...data, customization: updatedCustomization };
+    setData(updatedData);
+    // Persist font choice to DB immediately (autoSave may be off)
+    savePortfolio(updatedData);
   };
 
   const handleLogout = async () => {
@@ -175,7 +177,7 @@ export default function AdminPage() {
         </div>
       </main>
 
-      <Footer />
+      <Footer isEditMode={!isPreviewMode} />
 
       <ResumeManagerModal
         isOpen={isResumeManagerOpen}
@@ -221,7 +223,11 @@ export default function AdminPage() {
         currentScheme={data.customization?.colorScheme || data.colorScheme || 'cyber_yellow'}
         currentFont={data.customization?.fontFamily || 'font-mono'}
         autoSaveEnabled={autoSaveEnabled}
-        onSelectScheme={(schemeId) => setData(applyColorScheme(data, schemeId))}
+        onSelectScheme={(schemeId) => {
+          const themed = applyColorScheme(data, schemeId);
+          setData(themed);
+          savePortfolio(themed);
+        }}
         onSelectFont={handleSelectFont}
         onToggleAutoSave={setAutoSaveEnabled}
         onOpenCheckpoints={() => setIsCheckpointsOpen(true)}

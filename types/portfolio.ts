@@ -51,6 +51,7 @@ export interface Project {
   codeSnippet?: CodeSnippet;
   featured: boolean;
   accentColor: string;
+  order?: number;
 }
 
 export interface SkillGroup {
@@ -136,5 +137,7 @@ export interface PortfolioData {
   cards: BentoCardConfig[];
   colorScheme?: string;
   customization?: BentoCustomizationConfig;
-  checkpoints?: CheckpointSnapshot[];
+  // NOTE: checkpoints are intentionally NOT part of PortfolioData.
+  // They live in usePortfolioStore state + localStorage only,
+  // so restoring a checkpoint never overwrites the checkpoints list itself.
 }
