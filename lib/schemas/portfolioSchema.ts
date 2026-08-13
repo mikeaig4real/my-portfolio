@@ -74,7 +74,11 @@ export const BentoCustomContentSchema = z.object({
   metricValue: z.string().nullish().transform(v => v || ''),
   metricLabel: z.string().nullish().transform(v => v || ''),
   issuer: z.string().nullish().transform(v => v || ''),
-  issueDate: z.string().nullish().transform(v => v || ''),
+  issueDate: z.preprocess(
+    // MongoDB used to store this as a Date object — extract just the year for display
+    (v) => (v instanceof Date ? String(v.getFullYear()) : v),
+    z.string().nullish().transform(v => v || ''),
+  ),
   credentialUrl: z.string().nullish().transform(v => v || ''),
 });
 

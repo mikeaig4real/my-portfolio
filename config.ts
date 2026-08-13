@@ -30,6 +30,11 @@ const envSchema = z.object({
   NEXT_PUBLIC_ADMIN_SESSION_COOKIE_NAME: z
     .string()
     .min(1, 'NEXT_PUBLIC_ADMIN_SESSION_COOKIE_NAME environment variable is required for security'),
+  NEXT_PUBLIC_MOBILE_ADMIN_TAP_COUNT: z
+    .string()
+    .optional()
+    .transform((val) => (val && !isNaN(Number(val)) ? Number(val) : 5))
+    .default('5'),
 
   // Operational & debouncing constants
   NEXT_PUBLIC_AUTO_SAVE_DEBOUNCE_MS: z
@@ -63,6 +68,7 @@ const parsed = envSchema.safeParse({
   ADMIN_SESSION_TOKEN_VALUE: process.env.ADMIN_SESSION_TOKEN_VALUE,
   NEXT_PUBLIC_ADMIN_UNLOCK_KEY: process.env.NEXT_PUBLIC_ADMIN_UNLOCK_KEY,
   NEXT_PUBLIC_ADMIN_SESSION_COOKIE_NAME: process.env.NEXT_PUBLIC_ADMIN_SESSION_COOKIE_NAME,
+  NEXT_PUBLIC_MOBILE_ADMIN_TAP_COUNT: process.env.NEXT_PUBLIC_MOBILE_ADMIN_TAP_COUNT,
   NEXT_PUBLIC_AUTO_SAVE_DEBOUNCE_MS: process.env.NEXT_PUBLIC_AUTO_SAVE_DEBOUNCE_MS,
   MONGODB_URI: process.env.MONGODB_URI,
   DATABASE_PROVIDER: process.env.DATABASE_PROVIDER,
@@ -95,6 +101,7 @@ export const config = {
     adminSessionTokenValue: parsed.data.ADMIN_SESSION_TOKEN_VALUE,
     adminUnlockKey: parsed.data.NEXT_PUBLIC_ADMIN_UNLOCK_KEY,
     adminSessionCookieName: parsed.data.NEXT_PUBLIC_ADMIN_SESSION_COOKIE_NAME,
+    mobileAdminTapCount: (parsed.data.NEXT_PUBLIC_MOBILE_ADMIN_TAP_COUNT as unknown as number) || 5,
   },
   database: {
     provider: parsed.data.DATABASE_PROVIDER,

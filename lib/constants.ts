@@ -66,6 +66,7 @@ export const STORAGE_KEYS = {
 
 export const SHORTCUT_KEYS = {
   ADMIN_UNLOCK_KEY: config.security.adminUnlockKey.toLowerCase(),
+  MOBILE_ADMIN_TAP_COUNT: config.security.mobileAdminTapCount,
 } as const;
 
 export const FONT_PRESETS = [

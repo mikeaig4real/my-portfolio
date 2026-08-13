@@ -85,7 +85,8 @@ Open `http://localhost:3000` in your browser to access the portfolio viewer.
 ## Stealth Admin & Studio Management
 
 To unlock the live editor and access `/admin`:
-- Press the key defined by `NEXT_PUBLIC_ADMIN_UNLOCK_KEY` (default: `p`) on the landing page, or navigate directly to `/admin`.
+- **Desktop**: Press `Ctrl + Alt + Shift + [KEY]` on the landing page, where key is defined by `NEXT_PUBLIC_ADMIN_UNLOCK_KEY` (default: `p`), or navigate directly to `/admin`.
+- **Mobile**: Rapidly tap the copyright text in the footer `N` times, where tap count is defined by `NEXT_PUBLIC_MOBILE_ADMIN_TAP_COUNT` (default: `5`), to open the mobile-optimized admin passcode modal.
 - Log in using the `ADMIN_PASSWORD` defined in your environment variables.
 
 ---

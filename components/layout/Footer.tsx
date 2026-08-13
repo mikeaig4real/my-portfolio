@@ -5,6 +5,7 @@ import { usePortfolioStore } from '@/store/usePortfolioStore';
 import { SocialLink } from '@/types/portfolio';
 import { Edit3 } from 'lucide-react';
 import { FooterEditorModal } from '@/components/admin/FooterEditorModal';
+import { SHORTCUT_KEYS } from '@/lib/constants';
 
 interface FooterProps {
   /**
@@ -28,7 +29,7 @@ export const Footer: React.FC<FooterProps> = ({
   const { data, savePortfolio } = usePortfolioStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // --- 5-tap secret login trigger for mobile ---
+  // --- Secret login trigger for mobile ---
   // Using a ref so tap state doesn't cause re-renders
   const tapCountRef = useRef(0);
   const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -38,8 +39,8 @@ export const Footer: React.FC<FooterProps> = ({
 
     tapCountRef.current += 1;
 
-    if (tapCountRef.current >= 5) {
-      // 5th tap — fire the callback and reset
+    if (tapCountRef.current >= SHORTCUT_KEYS.MOBILE_ADMIN_TAP_COUNT) {
+      // Reached required tap threshold — fire the callback and reset
       onSecretAdminTap();
       tapCountRef.current = 0;
       if (tapTimerRef.current) {

@@ -26,7 +26,9 @@ export const CertificationCard: React.FC<CertificationCardProps> = ({
 }) => {
   const title = customContent?.title || 'Professional Certified Engineer';
   const issuer = customContent?.issuer || 'Certification Authority / Training';
-  const issueDate = customContent?.issueDate || '2025';
+  // Guard against any legacy full ISO strings already in DB (e.g. "2025-01-15T00:00:00.000Z" → "2025")
+  const rawIssueDate = customContent?.issueDate || '2025';
+  const issueDate = rawIssueDate.length > 4 ? String(new Date(rawIssueDate).getFullYear() || rawIssueDate) : rawIssueDate;
   const credentialUrl = customContent?.credentialUrl || '';
   const hasValidUrl = Boolean(credentialUrl && credentialUrl.trim() !== '' && credentialUrl !== 'https://');
 

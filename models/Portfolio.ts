@@ -105,7 +105,7 @@ const BentoCardConfigSchema = new Schema(
       body: { type: String },
       metricValue: { type: String },
       metricLabel: { type: String },
-      issueDate: { type: Date },
+      issueDate: { type: String },
       issuer: { type: String },
       credentialUrl: { type: String },
     },
