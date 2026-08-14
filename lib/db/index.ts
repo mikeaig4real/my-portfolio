@@ -4,6 +4,7 @@ import { MongoDatabaseAdapter } from './adapters/mongoAdapter';
 import { SQLiteDatabaseAdapter } from './adapters/sqliteAdapter';
 import { DrizzleSqliteAdapter } from './adapters/drizzleAdapter';
 import { PortfolioData } from '@/types/portfolio';
+import { logger } from '@/lib/logger';
 
 class DatabaseManager {
   private adapters: Map<string, IDatabaseAdapter> = new Map();
@@ -24,7 +25,7 @@ class DatabaseManager {
     const adapter = this.adapters.get(selected);
 
     if (!adapter) {
-      console.warn(`Database provider "${selected}" not found. Falling back to Drizzle SQLite adapter.`);
+      logger.warn(`Database provider "${selected}" not found. Falling back to Drizzle SQLite adapter.`);
       return this.adapters.get('drizzle') || new DrizzleSqliteAdapter();
     }
 
@@ -39,7 +40,7 @@ export async function getPortfolioDataUnified(): Promise<PortfolioData> {
   try {
     return await adapter.getPortfolio();
   } catch (err) {
-    console.warn(`Primary database adapter "${adapter.name}" failed, falling back to SQLite:`, err);
+    logger.warn(`Primary database adapter "${adapter.name}" failed, falling back to SQLite:`, err);
     const fallback = dbManager.getAdapter('sqlite');
     return await fallback.getPortfolio();
   }
@@ -54,7 +55,7 @@ export async function savePortfolioDataUnified(data: PortfolioData): Promise<Por
     }
     return saved;
   } catch (err) {
-    console.warn(`Primary database adapter "${adapter.name}" save failed, saving to SQLite fallback:`, err);
+    logger.warn(`Primary database adapter "${adapter.name}" save failed, saving to SQLite fallback:`, err);
     return await dbManager.getAdapter('sqlite').savePortfolio(data);
   }
 }

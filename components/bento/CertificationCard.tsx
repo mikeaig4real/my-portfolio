@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Award, ExternalLink } from 'lucide-react';
 import { BrutalCard } from '@/components/ui/BrutalCard';
 import { InlineText } from '@/components/inline/InlineText';
 import { BentoCustomContent } from '@/types/portfolio';
 import { InlineLinkPopover } from '@/components/inline/InlineLinkPopover';
+import { scrapeUrlMetadata } from '@/lib/utils/urlMetadata';
 
 interface CertificationCardProps {
   customContent?: BentoCustomContent;
@@ -32,6 +33,26 @@ export const CertificationCard: React.FC<CertificationCardProps> = ({
   const credentialUrl = customContent?.credentialUrl || '';
   const hasValidUrl = Boolean(credentialUrl && credentialUrl.trim() !== '' && credentialUrl !== 'https://');
 
+  const [isVerified, setIsVerified] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!hasValidUrl) {
+      setIsVerified(false);
+      return;
+    }
+
+    scrapeUrlMetadata(credentialUrl).then((meta) => {
+      if (isMounted) {
+        setIsVerified(meta.isRequestable);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [credentialUrl, hasValidUrl]);
+
   const updateField = (field: keyof BentoCustomContent, val: string) => {
     if (onUpdateContent) {
       onUpdateContent({ ...customContent, [field]: val });
@@ -49,7 +70,7 @@ export const CertificationCard: React.FC<CertificationCardProps> = ({
     <BrutalCard
       accentColor={accentColor}
       title={cardTitle || `CERTIFICATION // ${title}`}
-      badge="VERIFIED"
+      badge={isVerified ? 'VERIFIED' : undefined}
       isEditingActive={isEditingActive}
       onUpdateTitle={onUpdateCardTitle}
       onClick={handleCardClick}

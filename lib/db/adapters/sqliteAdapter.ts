@@ -5,6 +5,7 @@ import { PortfolioData } from '@/types/portfolio';
 import { defaultPortfolioData } from '@/lib/defaultData';
 import { validatePortfolioData } from '@/lib/schemas/portfolioSchema';
 import { DATABASE_CONSTANTS } from '@/lib/constants';
+import { logger } from '@/lib/logger';
 
 export class SQLiteDatabaseAdapter implements IDatabaseAdapter {
   readonly name = DATABASE_CONSTANTS.PROVIDERS.SQLITE;
@@ -52,7 +53,7 @@ export class SQLiteDatabaseAdapter implements IDatabaseAdapter {
     try {
       fs.writeFileSync(this.dbFilePath, JSON.stringify(validated, null, 2), 'utf-8');
     } catch (err) {
-      console.warn('Local file system save skipped (read-only environment):', err);
+      logger.warn('Local file system save skipped (read-only environment):', err);
     }
     return validated as unknown as PortfolioData;
   }

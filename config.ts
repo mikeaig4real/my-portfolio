@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 const isServer = typeof window === 'undefined';
 
@@ -87,7 +88,7 @@ const parsed = envSchema.safeParse({
 
 if (!parsed.success) {
   const fieldErrors = parsed.error.flatten().fieldErrors;
-  console.error('❌ SECURITY ALERT: Missing required security environment variables:', fieldErrors);
+  logger.error('❌ SECURITY ALERT: Missing required security environment variables:', fieldErrors);
   throw new Error(`Missing required security environment variables: ${JSON.stringify(fieldErrors)}`);
 }
 

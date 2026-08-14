@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 import config from '@/config';
+import { logger } from '@/lib/logger';
 
 if (config.cloudinary.cloudName && config.cloudinary.apiKey && config.cloudinary.apiSecret) {
   cloudinary.config({
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
           public_id: uploadResult.public_id,
         });
       } catch (cloudinaryErr) {
-        console.warn('Cloudinary upload error, falling back to base64 data URL:', cloudinaryErr);
+        logger.warn('Cloudinary upload error, falling back to base64 data URL:', cloudinaryErr);
       }
     }
 

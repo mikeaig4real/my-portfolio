@@ -7,6 +7,7 @@ import { SocialsEditor } from '@/components/editor/SocialsEditor';
 import { BrutalInput } from '@/components/ui/BrutalInput';
 import { BrutalButton } from '@/components/ui/BrutalButton';
 import { SocialLink, PortfolioData } from '@/types/portfolio';
+import { logger } from '@/lib/logger';
 
 interface FooterEditorModalProps {
   isOpen: boolean;
@@ -61,7 +62,7 @@ export const FooterEditorModal: React.FC<FooterEditorModalProps> = ({
         onClose();
       }, 1200);
     } catch (err) {
-      console.error('Footer save failed:', err);
+      logger.error('Footer save failed:', err);
     } finally {
       setSaving(false);
     }

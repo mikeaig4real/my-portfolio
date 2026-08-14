@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GripVertical, EyeOff, Settings2, X, Trash2 } from 'lucide-react';
+import { GripVertical, EyeOff, Settings2, X, Trash2, Wand2 } from 'lucide-react';
 import { BentoCardConfig } from '@/types/portfolio';
 import { CardResizeControls } from '@/components/inline/CardResizeControls';
 import { ColorSwatchPicker } from '@/components/inline/ItemEdgeControls';
@@ -14,6 +14,7 @@ interface BentoCardWrapperProps {
   onUpdateColor?: (color: string) => void;
   onToggleVisible?: () => void;
   onDeleteCard?: () => void;
+  onAutoFetchCard?: () => void;
   onDragHandlePointerDown?: (e: React.PointerEvent) => void;
   children: React.ReactNode;
 }
@@ -25,6 +26,7 @@ export const BentoCardWrapper: React.FC<BentoCardWrapperProps> = ({
   onUpdateColor,
   onToggleVisible,
   onDeleteCard,
+  onAutoFetchCard,
   onDragHandlePointerDown,
   children,
 }) => {
@@ -33,6 +35,8 @@ export const BentoCardWrapper: React.FC<BentoCardWrapperProps> = ({
   if (!card.visible && !isEditingActive) {
     return null;
   }
+
+  const supportsAutoFetch = ['featured_project', 'project_view', 'certification', 'custom_note'].includes(card.type);
 
   return (
     <div className="group/card relative w-full h-full min-h-55 max-h-162.5 overflow-visible">
@@ -57,6 +61,16 @@ export const BentoCardWrapper: React.FC<BentoCardWrapperProps> = ({
               >
                 <GripVertical className="w-3.5 h-3.5" />
               </div>
+
+              {supportsAutoFetch && onAutoFetchCard && (
+                <button
+                  onClick={onAutoFetchCard}
+                  title="⚡ Auto-Fetch metadata from link to populate this card"
+                  className="p-1 bg-yellow-400 text-black border border-black hover:bg-yellow-500 cursor-pointer"
+                >
+                  <Wand2 className="w-3.5 h-3.5" />
+                </button>
+              )}
 
               <button
                 onClick={() => setIsMenuOpen(true)}

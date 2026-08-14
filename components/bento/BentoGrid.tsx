@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, useDragControls } from 'framer-motion';
 import { PortfolioData, BentoCardConfig, Profile, Workplace, SkillGroup, Project, SocialLink } from '@/types/portfolio';
 import { BENTO_CARD_TYPES } from '@/lib/constants';
@@ -12,6 +12,9 @@ import { SocialsCard } from './SocialsCard';
 import { NoteCard } from './NoteCard';
 import { CertificationCard } from './CertificationCard';
 import { BentoCardWrapper } from './BentoCardWrapper';
+import { scrapeUrlMetadata } from '@/lib/utils/urlMetadata';
+import { showBentoToast } from '@/components/ui/BentoToast';
+import { BentoUrlPromptModal } from '@/components/ui/BentoUrlPromptModal';
 
 interface BentoGridProps {
   data: PortfolioData;
@@ -42,60 +45,54 @@ const getColSpanClass = (span: number) => {
 const getRowSpanClass = (span: number) => {
   switch (span) {
     case 2:
-      return 'row-span-1 md:row-span-2';
+      return 'row-span-2';
     case 3:
-      return 'row-span-1 md:row-span-3';
+      return 'row-span-3';
     default:
       return 'row-span-1';
   }
 };
 
-const BentoDragCardItem: React.FC<{
+interface BentoDragCardItemProps {
   card: BentoCardConfig;
   cards: BentoCardConfig[];
-  isEditingActive: boolean;
+  isEditingActive?: boolean;
   isNewlyAdded?: boolean;
-  onUpdateSpan: (c: number, r: number) => void;
-  onUpdateColor: (col: string) => void;
-  onToggleVisible: () => void;
+  onUpdateSpan?: (colSpan: number, rowSpan: number) => void;
+  onUpdateColor?: (color: string) => void;
+  onToggleVisible?: () => void;
   onDeleteCard?: () => void;
+  onAutoFetchCard?: () => void;
   onDropAtNewIndex: (draggedCardId: string, targetIdx: number) => void;
   children: React.ReactNode;
-}> = ({
+}
+
+const BentoDragCardItem: React.FC<BentoDragCardItemProps> = ({
   card,
   cards,
-  isEditingActive,
-  isNewlyAdded,
+  isEditingActive = false,
+  isNewlyAdded = false,
   onUpdateSpan,
   onUpdateColor,
   onToggleVisible,
   onDeleteCard,
+  onAutoFetchCard,
   onDropAtNewIndex,
   children,
 }) => {
   const controls = useDragControls();
-  const [isDragging, setIsDragging] = React.useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const handleDrag = (_: unknown, info: { point: { x: number; y: number } }) => {
-    const threshold = 120;
-    const viewportHeight = window.innerHeight;
-    const clientY = info.point.y - window.scrollY;
-
-    if (clientY < threshold) {
-      const scrollSpeed = Math.min(25, (threshold - clientY) / 3);
-      window.scrollBy(0, -scrollSpeed);
-    } else if (clientY > viewportHeight - threshold) {
-      const scrollSpeed = Math.min(25, (clientY - (viewportHeight - threshold)) / 3);
-      window.scrollBy(0, scrollSpeed);
-    }
+  const handleDrag = () => {
+    // optional live visual feedback
   };
 
   const handleDragEnd = (_: unknown, info: { point: { x: number; y: number } }) => {
     setIsDragging(false);
 
     const gridElements = document.querySelectorAll('[data-bento-card-id]');
-    let closestCardId = card.id;
     let minDistance = Infinity;
+    let closestCardId: string | null = null;
 
     gridElements.forEach((el) => {
       const rect = el.getBoundingClientRect();
@@ -112,7 +109,7 @@ const BentoDragCardItem: React.FC<{
       }
     });
 
-    if (closestCardId !== card.id) {
+    if (closestCardId && closestCardId !== card.id) {
       const targetIdx = cards.findIndex((c) => c.id === closestCardId);
       if (targetIdx !== -1) {
         onDropAtNewIndex(card.id, targetIdx);
@@ -146,6 +143,7 @@ const BentoDragCardItem: React.FC<{
         onUpdateColor={onUpdateColor}
         onToggleVisible={onToggleVisible}
         onDeleteCard={onDeleteCard}
+        onAutoFetchCard={onAutoFetchCard}
         onDragHandlePointerDown={(e) => controls.start(e)}
       >
         {children}
@@ -166,6 +164,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
   onUpdateSocials,
   onOpenResumeManager,
 }) => {
+  const [promptCard, setPromptCard] = useState<BentoCardConfig | null>(null);
   const cards = isEditingActive
     ? [...data.cards].sort((a, b) => a.order - b.order)
     : [...data.cards].filter((c) => c.visible).sort((a, b) => a.order - b.order);
@@ -341,27 +340,113 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
     }
   };
 
+  const handlePerformAutoFetch = async (card: BentoCardConfig, targetUrl: string) => {
+    setPromptCard(null);
+    const toastId = showBentoToast.loading(`Auto-fetching metadata from ${targetUrl}...`, 'FETCHING METADATA');
+
+    try {
+      const meta = await scrapeUrlMetadata(targetUrl);
+      showBentoToast.dismiss(toastId);
+
+      if (meta.isRequestable) {
+        // 1. Update project if linked
+        if (card.targetId && onUpdateProjects) {
+          const updatedProjects = data.projects.map((p) => {
+            if (p.id !== card.targetId) return p;
+            return {
+              ...p,
+              title: meta.title || p.title,
+              description: meta.description || p.description,
+              tagline: meta.siteName ? `Built on ${meta.siteName}` : p.tagline,
+              coverImage: meta.image || p.coverImage,
+              demoUrl: meta.url || p.demoUrl,
+            };
+          });
+          onUpdateProjects(updatedProjects);
+        }
+
+        // 2. Update card customContent and title
+        if (onUpdateCards) {
+          const updatedCards = data.cards.map((c) => {
+            if (c.id !== card.id) return c;
+            return {
+              ...c,
+              title: meta.title || c.title,
+              customContent: {
+                ...(c.customContent || {}),
+                ...(meta.title ? { title: meta.title } : {}),
+                ...(meta.description ? { body: meta.description } : {}),
+                ...(meta.siteName ? { issuer: meta.siteName } : {}),
+                ...(meta.url ? { credentialUrl: meta.url } : {}),
+              },
+            };
+          });
+          onUpdateCards(updatedCards);
+        }
+
+        showBentoToast.success(`Populated card metadata from ${meta.siteName || 'link'}!`, 'CARD UPDATED');
+      } else {
+        showBentoToast.error(meta.error || 'Failed to scrape metadata. Verify the URL is reachable.', 'FETCH FAILED');
+      }
+    } catch {
+      showBentoToast.dismiss(toastId);
+      showBentoToast.error('An unexpected error occurred while fetching link metadata.', 'ERROR');
+    }
+  };
+
+  const handleTriggerAutoFetch = (card: BentoCardConfig) => {
+    // If card is a project card, check if target project has demoUrl or githubUrl
+    if (card.targetId) {
+      const proj = data.projects.find((p) => p.id === card.targetId);
+      const targetUrl = proj?.demoUrl || proj?.githubUrl;
+      if (targetUrl && targetUrl !== 'https://' && targetUrl.trim() !== '') {
+        handlePerformAutoFetch(card, targetUrl);
+        return;
+      }
+    }
+
+    // If card has credentialUrl in customContent
+    if (card.customContent?.credentialUrl && card.customContent.credentialUrl !== 'https://') {
+      handlePerformAutoFetch(card, card.customContent.credentialUrl);
+      return;
+    }
+
+    // Otherwise open prompt modal
+    setPromptCard(card);
+  };
+
   return (
-    <motion.div
-      layout
-      className="grid grid-cols-1 md:grid-cols-4 gap-5 auto-rows-[minmax(220px,auto)] relative"
-    >
-      {cards.map((card) => (
-        <BentoDragCardItem
-          key={card.id}
-          card={card}
-          cards={cards}
-          isEditingActive={isEditingActive}
-          isNewlyAdded={card.id === newlyAddedCardId}
-          onUpdateSpan={(c, r) => handleUpdateCardSpan(card.id, c, r)}
-          onUpdateColor={(col) => handleUpdateCardColor(card.id, col)}
-          onToggleVisible={() => handleToggleCardVisible(card.id)}
-          onDeleteCard={() => handleDeleteCard(card.id)}
-          onDropAtNewIndex={handleDropAtNewIndex}
-        >
-          {renderCardContent(card)}
-        </BentoDragCardItem>
-      ))}
-    </motion.div>
+    <>
+      <BentoUrlPromptModal
+        isOpen={Boolean(promptCard)}
+        title={`⚡ Auto-Fetch: ${promptCard?.title || 'Card'}`}
+        subtitle="Enter a URL (Live Demo, GitHub repo, or Credential URL) to auto-populate this card's content."
+        onClose={() => setPromptCard(null)}
+        onSubmit={(url) => promptCard && handlePerformAutoFetch(promptCard, url)}
+      />
+
+      <motion.div
+        layout
+        className="grid grid-cols-1 md:grid-cols-4 gap-5 auto-rows-[minmax(220px,auto)] relative"
+      >
+        {cards.map((card) => (
+          <BentoDragCardItem
+            key={card.id}
+            card={card}
+            cards={cards}
+            isEditingActive={isEditingActive}
+            isNewlyAdded={card.id === newlyAddedCardId}
+            onUpdateSpan={(c, r) => handleUpdateCardSpan(card.id, c, r)}
+            onUpdateColor={(col) => handleUpdateCardColor(card.id, col)}
+            onToggleVisible={() => handleToggleCardVisible(card.id)}
+            onDeleteCard={() => handleDeleteCard(card.id)}
+            onAutoFetchCard={() => handleTriggerAutoFetch(card)}
+            onDropAtNewIndex={handleDropAtNewIndex}
+          >
+            {renderCardContent(card)}
+          </BentoDragCardItem>
+        ))}
+      </motion.div>
+    </>
   );
 };

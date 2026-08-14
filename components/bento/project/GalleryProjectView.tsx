@@ -9,6 +9,7 @@ import { InlineText } from '@/components/inline/InlineText';
 import { InlineImagePicker } from '@/components/inline/InlineImagePicker';
 import { EditableTagList } from '@/components/inline/EditableTagList';
 import { InlineLinkPopover } from '@/components/inline/InlineLinkPopover';
+import { logger } from '@/lib/logger';
 
 interface GalleryProjectViewProps {
   project: Project;
@@ -45,23 +46,40 @@ export const GalleryProjectView: React.FC<GalleryProjectViewProps> = ({
   };
 
   const handleImageUploaded = (newUrl: string) => {
-    const updatedGallery = [...images];
-    updatedGallery[galleryIdx] = newUrl;
-    updateField('galleryImages', updatedGallery);
-    if (!project.coverImage || galleryIdx === 0) {
-      updateField('coverImage', newUrl);
+    logger.info(`[GalleryProjectView] Image uploaded/attached for slide #${galleryIdx + 1}:`, newUrl);
+    const currentList = (project.galleryImages && project.galleryImages.length > 0)
+      ? [...project.galleryImages]
+      : [...defaultImages];
+
+    currentList[galleryIdx] = newUrl;
+
+    if (onUpdateProject) {
+      onUpdateProject({
+        ...project,
+        galleryImages: currentList,
+        ...(galleryIdx === 0 ? { coverImage: newUrl } : {}),
+      });
     }
   };
 
   const handleImageRemoved = () => {
-    const updatedGallery = images.filter((_, idx) => idx !== galleryIdx);
+    const currentList = (project.galleryImages && project.galleryImages.length > 0)
+      ? [...project.galleryImages]
+      : [...defaultImages];
+
+    const updatedGallery = currentList.filter((_, idx) => idx !== galleryIdx);
     updateField('galleryImages', updatedGallery);
     setGalleryIdx(0);
   };
 
   const handleAddGallerySlide = () => {
-    if (images.length >= 3) return;
-    const updated = [...images, 'https://images.unsplash.com/photo-1507925921958-81fcd9a457c6?auto=format&fit=crop&w=600&q=80'];
+    const currentList = (project.galleryImages && project.galleryImages.length > 0)
+      ? [...project.galleryImages]
+      : [...defaultImages];
+
+    if (currentList.length >= 5) return;
+    const newPlaceholder = 'https://images.unsplash.com/photo-1507925921958-81fcd9a457c6?auto=format&fit=crop&w=600&q=80';
+    const updated = [...currentList, newPlaceholder];
     updateField('galleryImages', updated);
     setGalleryIdx(updated.length - 1);
   };

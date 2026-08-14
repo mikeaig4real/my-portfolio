@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Profile } from '@/types/portfolio';
 import { BrutalInput, BrutalTextarea } from '@/components/ui/BrutalInput';
 import { Upload } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface ProfileEditorProps {
   profile: Profile;
@@ -36,7 +37,7 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({ profile, onChange 
         onChange({ ...profile, avatar: data.url });
       }
     } catch (err) {
-      console.error('Image upload failed:', err);
+      logger.error('Image upload failed:', err);
     } finally {
       setUploading(false);
     }
@@ -53,7 +54,7 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({ profile, onChange 
       <div className="flex items-center gap-4 bg-yellow-100 dark:bg-slate-800 p-3 border-2 border-black dark:border-white">
         <div className="w-16 h-16 border-2 border-black dark:border-white overflow-hidden shrink-0 bg-white">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={profile.avatar} alt="Avatar Preview" className="w-full h-full object-cover" />
+          <img src={profile.avatar} alt="Avatar Preview" className="w-full h-full object-cover object-top" />
         </div>
         <div className="flex-1 space-y-1.5">
           <label className="block text-xs font-mono font-bold uppercase text-black dark:text-white">

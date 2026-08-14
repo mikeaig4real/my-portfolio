@@ -16,12 +16,16 @@ import { ThemeEditor } from './drawer/ThemeEditor';
 import { defaultPortfolioData } from '@/lib/defaultData';
 import { applyColorScheme, randomizeCardColors } from '@/lib/colorPalettes';
 import confetti from 'canvas-confetti';
+import { BentoConfirmModal } from '@/components/ui/BentoConfirmModal';
+import { showBentoToast } from '@/components/ui/BentoToast';
+import { logger } from '@/lib/logger';
 
 interface EditDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   data: PortfolioData;
   onSave: (updatedData: PortfolioData) => Promise<void>;
+  onSyncLive?: (updatedData: PortfolioData) => void;
 }
 
 export const EditDrawer: React.FC<EditDrawerProps> = ({
@@ -29,15 +33,22 @@ export const EditDrawer: React.FC<EditDrawerProps> = ({
   onClose,
   data,
   onSave,
+  onSyncLive,
 }) => {
   const [activeTab, setActiveTab] = useState<DrawerTab>('profile');
   const [draftData, setDraftData] = useState<PortfolioData>(data);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   React.useEffect(() => {
     if (isOpen) setDraftData(data);
   }, [isOpen, data]);
+
+  const updateDraftAndSync = (updated: PortfolioData) => {
+    setDraftData(updated);
+    if (onSyncLive) onSyncLive(updated);
+  };
 
   const handleSaveClick = async () => {
     setSaving(true);
@@ -51,17 +62,16 @@ export const EditDrawer: React.FC<EditDrawerProps> = ({
       }
       setTimeout(() => setSavedSuccess(false), 2500);
     } catch (err) {
-      console.error('Save failed:', err);
+      logger.error('Save failed:', err);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleResetDefaults = () => {
-    if (confirm('Reset portfolio to defaults?')) {
-      setDraftData(defaultPortfolioData);
-      onSave(defaultPortfolioData);
-    }
+  const handleConfirmResetDefaults = () => {
+    updateDraftAndSync(defaultPortfolioData);
+    onSave(defaultPortfolioData);
+    showBentoToast.success('Portfolio reset to default configuration!', 'RESET COMPLETE');
   };
 
   return (
@@ -119,7 +129,11 @@ export const EditDrawer: React.FC<EditDrawerProps> = ({
               {activeTab === 'projects' && (
                 <ProjectEditor
                   projects={draftData.projects}
-                  onChange={(pr) => setDraftData({ ...draftData, projects: pr })}
+                  cards={draftData.cards}
+                  onChange={(pr) => updateDraftAndSync({ ...draftData, projects: pr })}
+                  onAddCardToGrid={(newCard) =>
+                    updateDraftAndSync({ ...draftData, cards: [...draftData.cards, newCard] })
+                  }
                 />
               )}
               {activeTab === 'skills' && (
@@ -152,10 +166,21 @@ export const EditDrawer: React.FC<EditDrawerProps> = ({
             <EditDrawerFooter
               saving={saving}
               savedSuccess={savedSuccess}
-              onResetDefaults={handleResetDefaults}
+              onResetDefaults={() => setIsResetConfirmOpen(true)}
               onSave={handleSaveClick}
             />
           </motion.div>
+
+          <BentoConfirmModal
+            isOpen={isResetConfirmOpen}
+            title="⚠️ RESET ENTIRE PORTFOLIO?"
+            message="Are you sure you want to reset all portfolio content, cards, projects, and themes to default settings? Any unsaved edits will be permanently overwritten."
+            confirmText="Yes, Reset Portfolio"
+            cancelText="Keep Current Portfolio"
+            variant="danger"
+            onClose={() => setIsResetConfirmOpen(false)}
+            onConfirm={handleConfirmResetDefaults}
+          />
         </>
       )}
     </AnimatePresence>

@@ -210,6 +210,7 @@ export default function AdminPage() {
         onClose={() => setIsDrawerOpen(false)}
         data={data}
         onSave={savePortfolio}
+        onSyncLive={(updated) => setData(updated)}
       />
 
       <AnalyticsWidget

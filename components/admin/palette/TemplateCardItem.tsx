@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { Plus, UserCheck, Briefcase, Layers, Share2, Award, Layout, Code2, FileText } from 'lucide-react';
 import { CardTemplateOption } from '@/lib/cardTemplates';

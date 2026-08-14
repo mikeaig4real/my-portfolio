@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { BentoToaster } from '@/components/ui/BentoToast';
 
 export const metadata: Metadata = {
   title: 'Michael Aigbovbiosa — Senior Full Stack / AI Engineer | Neobrutalism Bento Portfolio',
@@ -31,6 +32,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
       <body suppressHydrationWarning className="antialiased selection:bg-yellow-300 selection:text-black">
         {children}
+        <BentoToaster />
       </body>
     </html>
   );

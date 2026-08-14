@@ -7,7 +7,6 @@ import { SkillGroup } from "@/types/portfolio";
 import { BrutalCard } from "@/components/ui/BrutalCard";
 import { InlineText } from "@/components/inline/InlineText";
 import {
-  DeleteEdgeControl,
   AddEdgeControl,
 } from "@/components/inline/ItemEdgeControls";
 
@@ -95,16 +94,20 @@ export const TechStackCard: React.FC<TechStackCardProps> = ({
       onUpdateTitle={onUpdateCardTitle}
       className="h-full flex flex-col justify-between overflow-hidden"
     >
-      <div className="overflow-y-auto max-h-95 md:max-h-110 pr-1.5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Negative margins to reclaim BrutalCard's internal padding for more list space */}
+      <div className="overflow-y-auto max-h-95 md:max-h-110 -mx-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
         {skills.map((group) => (
-          <div key={group.id} className="space-y-1.5 relative group/cat">
+          <div key={group.id} className="space-y-1 relative group/cat">
             {isEditingActive && (
-              <div className="absolute -top-2 -right-2 hidden group-hover/cat:block">
-                <DeleteEdgeControl
-                  onDelete={() => handleDeleteGroup(group.id)}
+              <div className="absolute -top-1.5 -right-1.5 hidden group-hover/cat:block z-20">
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group.id); }}
                   title="Delete category"
-                />
+                  className="p-0.5 bg-red-500 text-white border border-black hover:bg-red-600 cursor-pointer shadow-[1px_1px_0px_0px_#000]"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
               </div>
             )}
 
@@ -120,7 +123,7 @@ export const TechStackCard: React.FC<TechStackCardProps> = ({
               />
             </h4>
 
-            <div className="flex flex-wrap gap-1.5 items-center">
+            <div className="flex flex-wrap gap-1.5 items-center min-h-8">
               {group.skills.map((skill, sIdx) => (
                 <motion.div
                   key={sIdx}
@@ -128,7 +131,7 @@ export const TechStackCard: React.FC<TechStackCardProps> = ({
                   className="relative group/skill inline-flex items-center"
                 >
                   <span
-                    className="px-2 py-1 text-xs font-mono font-bold text-black border-2 border-black shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]"
+                    className="px-2 py-0.5 text-xs font-mono font-bold text-black border-2 border-black shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff]"
                     style={{ backgroundColor: group.badgeColor }}
                   >
                     <InlineText
@@ -139,10 +142,14 @@ export const TechStackCard: React.FC<TechStackCardProps> = ({
                   </span>
 
                   {isEditingActive && (
-                    <span className="ml-0.5 hidden group-hover/skill:inline-block">
-                      <DeleteEdgeControl
-                        onDelete={() => handleDeleteSkill(group.id, sIdx)}
-                      />
+                    <span className="absolute -top-1.5 -right-2.5 opacity-0 group-hover/skill:opacity-100 transition-opacity z-20 pointer-events-none group-hover/skill:pointer-events-auto">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteSkill(group.id, sIdx); }}
+                        title="Delete skill"
+                        className="p-0.5 bg-red-500 text-white border border-black hover:bg-red-600 cursor-pointer shadow-[1px_1px_0px_0px_#000] z-20"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
                     </span>
                   )}
                 </motion.div>
@@ -151,7 +158,7 @@ export const TechStackCard: React.FC<TechStackCardProps> = ({
               {isEditingActive && (
                 <button
                   onClick={() => handleAddSkillToGroup(group.id)}
-                  className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-white text-black border border-black hover:bg-yellow-200 cursor-pointer"
+                  className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-white text-black border border-black hover:bg-yellow-200 cursor-pointer shrink-0"
                 >
                   + Skill
                 </button>
@@ -163,7 +170,7 @@ export const TechStackCard: React.FC<TechStackCardProps> = ({
       </div>
 
       {isEditingActive && (
-        <div className="pt-2">
+        <div className="pt-1.5">
           <AddEdgeControl onAdd={handleAddGroup} label="Add Skill Category" />
         </div>
       )}

@@ -5,6 +5,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import config from '@/config';
 import { ApiResponse } from '@/lib/apiResponse';
 import { CLOUDINARY_CONSTANTS, DATABASE_CONSTANTS } from '@/lib/constants';
+import { logger } from '@/lib/logger';
 
 // Configure Cloudinary if keys exist
 if (config.cloudinary.cloudName && config.cloudinary.apiKey && config.cloudinary.apiSecret) {
@@ -44,7 +45,7 @@ export async function GET() {
         },
       });
     } catch (err) {
-      console.error('Error reading local resume file:', err);
+      logger.error('Error reading local resume file:', err);
     }
   }
 
@@ -75,7 +76,7 @@ export async function POST(request: Request) {
           },
           (error, result) => {
             if (error || !result) {
-              console.warn('Cloudinary upload error, falling back to local file storage:', error);
+              logger.warn('Cloudinary upload error, falling back to local file storage:', error);
               saveFileLocally(buffer);
               resolve(ApiResponse.success({ url: '/api/resume', source: 'local_storage' }));
             } else {
@@ -98,7 +99,7 @@ export async function POST(request: Request) {
     return ApiResponse.success({ url: '/api/resume', source: 'local_storage' });
   } catch (error: unknown) {
     const err = error as Error;
-    console.error('Resume upload error:', err);
+    logger.error('Resume upload error:', err);
     return ApiResponse.serverError(err.message || 'Failed to upload resume.');
   }
 }
@@ -119,7 +120,7 @@ function saveFileLocally(buffer: Buffer) {
       }
       fs.writeFileSync(tmpPath, buffer);
     } catch (tmpErr) {
-      console.warn('Failed to save resume buffer to local filesystem:', tmpErr);
+      logger.warn('Failed to save resume buffer to local filesystem:', tmpErr);
     }
   }
 }
@@ -140,7 +141,7 @@ export async function DELETE(request: Request) {
     return ApiResponse.success(null, 'Resume file deleted successfully.');
   } catch (error: unknown) {
     const err = error as Error;
-    console.error('Resume delete error:', err);
+    logger.error('Resume delete error:', err);
     return ApiResponse.serverError(err.message || 'Failed to delete resume.');
   }
 }
