@@ -102,7 +102,7 @@ function parseHtmlMetadata(html: string, baseUrl: string): Partial<ScrapedMetada
     headings,
   };
 
-  logger.info(`Scraped metadata for URL: ${baseUrl} - ${JSON.stringify(parsed, null, 2)}`);
+  logger.debug(`Scraped metadata for URL: ${baseUrl} - ${JSON.stringify(parsed, null, 2)}`);
   return parsed;
 }
 
@@ -158,7 +158,7 @@ export async function POST(req: NextRequest) {
       return ApiResponse.error('Invalid URL format', 400);
     }
 
-    logger.info(`Scraping metadata for URL: ${targetUrl}`);
+    logger.debug(`Scraping metadata for URL: ${targetUrl}`);
 
     // Fast-path 1: Direct image asset URLs
     const isDirectImage = /\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i.test(parsedUrl.pathname);

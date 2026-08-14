@@ -54,7 +54,7 @@ export const InlineImagePicker: React.FC<InlineImagePickerProps> = ({
       });
 
       const data = await res.json();
-      logger.info('Upload completed API returned data:', data);
+      logger.debug('Upload completed API returned data:', data);
       showBentoToast.dismiss(toastId);
 
       if (data.success && data.url) {
@@ -73,7 +73,7 @@ export const InlineImagePicker: React.FC<InlineImagePickerProps> = ({
   };
 
   const handleAttachLink = (url: string) => {
-    logger.info('Direct image link attached:', url);
+    logger.debug('Direct image link attached:', url);
     onImageUploaded(url);
     setIsUrlModalOpen(false);
     showBentoToast.success('Image link attached successfully!', 'LINK ATTACHED');

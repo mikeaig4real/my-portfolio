@@ -28,7 +28,9 @@ class StructuredLogger {
   }
 
   info(message: string, context?: unknown) {
-    this.log('info', '⚡', message, context);
+    if (this.isDev) {
+      this.log('info', '⚡', message, context);
+    }
   }
 
   warn(message: string, context?: unknown) {

@@ -46,7 +46,7 @@ export const GalleryProjectView: React.FC<GalleryProjectViewProps> = ({
   };
 
   const handleImageUploaded = (newUrl: string) => {
-    logger.info(`[GalleryProjectView] Image uploaded/attached for slide #${galleryIdx + 1}:`, newUrl);
+    logger.debug(`[GalleryProjectView] Image uploaded/attached for slide #${galleryIdx + 1}:`, newUrl);
     const currentList = (project.galleryImages && project.galleryImages.length > 0)
       ? [...project.galleryImages]
       : [...defaultImages];
