@@ -289,6 +289,12 @@ export const AnalyticsWidget: React.FC<AnalyticsWidgetProps> = ({ isOpen, onClos
         return 'bg-purple-300 text-black';
       case 'project_click':
         return 'bg-cyan-300 text-black';
+      case 'certificate_click':
+        return 'bg-amber-400 text-black';
+      case 'code_copy':
+        return 'bg-violet-400 text-white';
+      case 'outbound_link':
+        return 'bg-blue-400 text-white';
       case 'section_dwell':
         return 'bg-lime-300 text-black';
       case 'scroll_depth':

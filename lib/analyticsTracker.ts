@@ -153,6 +153,35 @@ export const trackContactClick = (channel = 'email') => {
   });
 };
 
+export const trackCertificateClick = (credentialUrl: string, title: string, issuer = '') => {
+  sendAnalyticsEvent({
+    type: ANALYTICS_EVENTS.CERTIFICATE_CLICK,
+    targetId: credentialUrl || title,
+    targetTitle: `Certificate: ${title}`,
+    details: issuer ? `Issuer: ${issuer} | URL: ${credentialUrl}` : credentialUrl,
+    section: 'Certifications',
+  });
+};
+
+export const trackCodeCopy = (projectTitle: string, language = 'code') => {
+  sendAnalyticsEvent({
+    type: ANALYTICS_EVENTS.CODE_COPY,
+    targetId: projectTitle,
+    targetTitle: `Copied Code (${language})`,
+    details: `Snippet from ${projectTitle}`,
+    section: 'Projects',
+  });
+};
+
+export const trackOutboundClick = (url: string, label: string) => {
+  sendAnalyticsEvent({
+    type: ANALYTICS_EVENTS.OUTBOUND_LINK,
+    targetId: url,
+    targetTitle: label,
+    details: url,
+  });
+};
+
 export const trackChatInteraction = (messageCount: number) => {
   sendAnalyticsEvent({
     type: ANALYTICS_EVENTS.CHAT_INTERACTION,

@@ -10,6 +10,7 @@ import { InlineImagePicker } from '@/components/inline/InlineImagePicker';
 import { EditableTagList } from '@/components/inline/EditableTagList';
 import { InlineLinkPopover } from '@/components/inline/InlineLinkPopover';
 import { logger } from '@/lib/logger';
+import { trackProjectClick } from '@/lib/analyticsTracker';
 
 interface FeaturedProjectViewProps {
   project: Project;
@@ -211,6 +212,7 @@ export const FeaturedProjectView: React.FC<FeaturedProjectViewProps> = ({
             variant="yellow"
             icon={<ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />}
             isEditingActive={isEditingActive}
+            onClick={() => trackProjectClick(project.id, project.title, 'live_demo')}
             onUpdateLink={(_, newUrl) => updateField('demoUrl', newUrl)}
           />
 
@@ -220,6 +222,7 @@ export const FeaturedProjectView: React.FC<FeaturedProjectViewProps> = ({
             variant="white"
             icon={<Github className="w-3.5 h-3.5 stroke-[2.5]" />}
             isEditingActive={isEditingActive}
+            onClick={() => trackProjectClick(project.id, project.title, 'github_repo')}
             onUpdateLink={(_, newUrl) => updateField('githubUrl', newUrl)}
           />
         </div>

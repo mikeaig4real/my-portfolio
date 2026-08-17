@@ -16,7 +16,7 @@ import { SocialLink } from "@/types/portfolio";
 import { BrutalCard } from "@/components/ui/BrutalCard";
 import { InlineText } from "@/components/inline/InlineText";
 import { InlineLinkPopover } from "@/components/inline/InlineLinkPopover";
-import { trackSocialClick } from "@/lib/analyticsTracker";
+import { trackSocialClick, trackContactClick } from "@/lib/analyticsTracker";
 
 interface SocialsCardProps {
   socials: SocialLink[];
@@ -111,7 +111,13 @@ export const SocialsCard: React.FC<SocialsCardProps> = ({
                 href={isEditingActive ? undefined : soc.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => !isEditingActive && trackSocialClick(soc.platform, soc.url)}
+                onClick={() => {
+                  if (isEditingActive) return;
+                  trackSocialClick(soc.platform, soc.url);
+                  if (soc.platform.toLowerCase() === 'email' || soc.url.toLowerCase().startsWith('mailto:')) {
+                    trackContactClick('email');
+                  }
+                }}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className={`flex items-center gap-2 p-2 border-2 border-black dark:border-white text-black shadow-[2px_2px_0px_0px_#000] dark:shadow-[2px_2px_0px_0px_#fff] transition-all ${getBg(

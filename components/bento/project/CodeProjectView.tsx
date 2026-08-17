@@ -7,6 +7,7 @@ import { BrutalCard } from '@/components/ui/BrutalCard';
 import { InlineText } from '@/components/inline/InlineText';
 import { EditableTagList } from '@/components/inline/EditableTagList';
 import { InlineLinkPopover } from '@/components/inline/InlineLinkPopover';
+import { trackProjectClick, trackCodeCopy } from '@/lib/analyticsTracker';
 
 interface CodeProjectViewProps {
   project: Project;
@@ -49,6 +50,7 @@ export const CodeProjectView: React.FC<CodeProjectViewProps> = ({
   const handleCopyCode = () => {
     if (project.codeSnippet?.code) {
       navigator.clipboard.writeText(project.codeSnippet.code);
+      trackCodeCopy(project.title, project.codeSnippet?.language);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -119,6 +121,7 @@ export const CodeProjectView: React.FC<CodeProjectViewProps> = ({
             variant="purple"
             icon={<Github className="w-3.5 h-3.5 stroke-[2.5]" />}
             isEditingActive={isEditingActive}
+            onClick={() => trackProjectClick(project.id, project.title, 'code_repo')}
             onUpdateLink={(_, newUrl) => updateField('githubUrl', newUrl)}
           />
         </div>

@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export interface BrutalButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface BrutalButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'> {
   children: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'accent' | 'yellow' | 'pink' | 'cyan' | 'lime' | 'purple' | 'orange' | 'dark' | 'white';
   size?: 'sm' | 'md' | 'lg';
@@ -11,6 +11,7 @@ export interface BrutalButtonProps extends React.ButtonHTMLAttributes<HTMLButton
   href?: string;
   target?: string;
   rel?: string;
+  onClick?: (e: React.MouseEvent<HTMLElement>) => void;
 }
 
 export const BrutalButton: React.FC<BrutalButtonProps> = ({
@@ -57,6 +58,7 @@ export const BrutalButton: React.FC<BrutalButtonProps> = ({
         target={target}
         rel={rel}
         title={title}
+        onClick={onClick as React.MouseEventHandler<HTMLAnchorElement>}
         whileHover={{ x: -2, y: -2, boxShadow: '6px 6px 0px 0px #000' }}
         whileTap={{ x: 2, y: 2, boxShadow: '1px 1px 0px 0px #000' }}
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -70,7 +72,7 @@ export const BrutalButton: React.FC<BrutalButtonProps> = ({
   return (
     <motion.button
       type={props.type || 'button'}
-      onClick={onClick}
+      onClick={onClick as React.MouseEventHandler<HTMLButtonElement>}
       disabled={disabled}
       title={title}
       whileHover={{ x: -2, y: -2, boxShadow: '6px 6px 0px 0px #000' }}

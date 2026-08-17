@@ -217,6 +217,10 @@ export async function recordAnalyticsEventUnified(event: IAnalyticsEvent): Promi
       const key = event.targetTitle || event.targetId || 'Unknown Project';
       const current = doc.projectClicks.get(key) || 0;
       doc.projectClicks.set(key, current + 1);
+    } else if (event.type === ANALYTICS_EVENTS.CERTIFICATE_CLICK) {
+      const sectionKey = event.section || 'Certifications';
+      const current = doc.sectionEngagement.get(sectionKey) || 0;
+      doc.sectionEngagement.set(sectionKey, current + 5);
     } else if (event.type === ANALYTICS_EVENTS.SECTION_DWELL && event.section) {
       const current = doc.sectionEngagement.get(event.section) || 0;
       doc.sectionEngagement.set(event.section, current + (event.duration || 5));
@@ -248,6 +252,10 @@ export async function recordAnalyticsEventUnified(event: IAnalyticsEvent): Promi
       currentData.totalProjectClicks += 1;
       const key = event.targetTitle || event.targetId || 'Unknown Project';
       currentData.projectClicks[key] = (currentData.projectClicks[key] || 0) + 1;
+    } else if (event.type === ANALYTICS_EVENTS.CERTIFICATE_CLICK) {
+      const sectionKey = event.section || 'Certifications';
+      currentData.sectionEngagement[sectionKey] =
+        (currentData.sectionEngagement[sectionKey] || 0) + 5;
     } else if (event.type === ANALYTICS_EVENTS.SECTION_DWELL && event.section) {
       currentData.sectionEngagement[event.section] =
         (currentData.sectionEngagement[event.section] || 0) + (event.duration || 5);

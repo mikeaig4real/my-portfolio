@@ -96,6 +96,8 @@ export const ANALYTICS_EVENTS = {
   RESUME_DOWNLOAD: 'resume_download',
   CONTACT_CLICK: 'contact_click',
   SOCIAL_CLICK: 'social_click',
+  CERTIFICATE_CLICK: 'certificate_click',
+  CODE_COPY: 'code_copy',
   SESSION_DURATION: 'session_duration',
   SCROLL_DEPTH: 'scroll_depth',
   SECTION_DWELL: 'section_dwell',

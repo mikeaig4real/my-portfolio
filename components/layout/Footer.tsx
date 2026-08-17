@@ -6,6 +6,7 @@ import { SocialLink } from '@/types/portfolio';
 import { Edit3 } from 'lucide-react';
 import { FooterEditorModal } from '@/components/admin/FooterEditorModal';
 import { SHORTCUT_KEYS } from '@/lib/constants';
+import { trackSocialClick, trackContactClick } from '@/lib/analyticsTracker';
 
 interface FooterProps {
   /**
@@ -88,6 +89,12 @@ export const Footer: React.FC<FooterProps> = ({
                   href={soc.url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => {
+                    trackSocialClick(soc.platform, soc.url);
+                    if (soc.platform.toLowerCase() === 'email' || soc.url.toLowerCase().startsWith('mailto:')) {
+                      trackContactClick('email');
+                    }
+                  }}
                   className="hover:underline hover:text-yellow-500 transition-colors"
                 >
                   {soc.platform}

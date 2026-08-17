@@ -7,6 +7,7 @@ import { BrutalCard } from '@/components/ui/BrutalCard';
 import { InlineText } from '@/components/inline/InlineText';
 import { EditableTagList } from '@/components/inline/EditableTagList';
 import { InlineLinkPopover } from '@/components/inline/InlineLinkPopover';
+import { trackProjectClick } from '@/lib/analyticsTracker';
 
 interface CompactProjectViewProps {
   project: Project;
@@ -81,6 +82,7 @@ export const CompactProjectView: React.FC<CompactProjectViewProps> = ({
           variant="lime"
           icon={<Github className="w-3.5 h-3.5 stroke-[2.5]" />}
           isEditingActive={isEditingActive}
+          onClick={() => trackProjectClick(project.id, project.title, 'compact_code')}
           onUpdateLink={(_, newUrl) => updateField('githubUrl', newUrl)}
         />
       </div>

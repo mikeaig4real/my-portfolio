@@ -10,6 +10,7 @@ import { InlineImagePicker } from '@/components/inline/InlineImagePicker';
 import { EditableTagList } from '@/components/inline/EditableTagList';
 import { InlineLinkPopover } from '@/components/inline/InlineLinkPopover';
 import { logger } from '@/lib/logger';
+import { trackProjectClick } from '@/lib/analyticsTracker';
 
 interface GalleryProjectViewProps {
   project: Project;
@@ -173,6 +174,7 @@ export const GalleryProjectView: React.FC<GalleryProjectViewProps> = ({
             variant="cyan"
             icon={<ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />}
             isEditingActive={isEditingActive}
+            onClick={() => trackProjectClick(project.id, project.title, 'gallery_demo')}
             onUpdateLink={(_, newUrl) => updateField('demoUrl', newUrl)}
           />
         </div>

@@ -7,6 +7,7 @@ import { Project } from '@/types/portfolio';
 import { BrutalCard } from '@/components/ui/BrutalCard';
 import { InlineText } from '@/components/inline/InlineText';
 import { InlineLinkPopover } from '@/components/inline/InlineLinkPopover';
+import { trackProjectClick } from '@/lib/analyticsTracker';
 
 interface MetricProjectViewProps {
   project: Project;
@@ -88,6 +89,7 @@ export const MetricProjectView: React.FC<MetricProjectViewProps> = ({
           variant="pink"
           icon={<ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />}
           isEditingActive={isEditingActive}
+          onClick={() => trackProjectClick(project.id, project.title, 'metric_dashboard')}
           onUpdateLink={(_, newUrl) => updateField('demoUrl', newUrl)}
         />
       </div>

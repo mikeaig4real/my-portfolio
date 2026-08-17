@@ -7,6 +7,7 @@ import { InlineText } from '@/components/inline/InlineText';
 import { BentoCustomContent } from '@/types/portfolio';
 import { InlineLinkPopover } from '@/components/inline/InlineLinkPopover';
 import { scrapeUrlMetadata } from '@/lib/utils/urlMetadata';
+import { trackCertificateClick } from '@/lib/analyticsTracker';
 
 interface CertificationCardProps {
   customContent?: BentoCustomContent;
@@ -63,6 +64,7 @@ export const CertificationCard: React.FC<CertificationCardProps> = ({
     if (isEditingActive || !hasValidUrl) return;
     // Don't trigger if user clicked an interactive child button
     if ((e.target as HTMLElement).closest('button, a, input')) return;
+    trackCertificateClick(credentialUrl, title, issuer);
     window.open(credentialUrl, '_blank', 'noopener,noreferrer');
   };
 
@@ -115,6 +117,7 @@ export const CertificationCard: React.FC<CertificationCardProps> = ({
           variant="yellow"
           icon={<ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />}
           isEditingActive={isEditingActive}
+          onClick={() => trackCertificateClick(credentialUrl, title, issuer)}
           onUpdateLink={(_, newUrl) => updateField('credentialUrl', newUrl)}
         />
       </div>
