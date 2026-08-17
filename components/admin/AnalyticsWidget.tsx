@@ -1,31 +1,22 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, Download, Mail, X, Activity, Globe, Monitor, ShieldAlert } from 'lucide-react';
-
-interface AnalyticsEvent {
-  type: string;
-  timestamp: string;
-  targetId?: string;
-  ip?: string;
-  country?: string;
-  city?: string;
-  region?: string;
-  isp?: string;
-  browser?: string;
-  os?: string;
-  device?: string;
-  screen?: string;
-}
-
-interface AnalyticsData {
-  totalViews: number;
-  totalResumeDownloads: number;
-  totalContactClicks: number;
-  projectClicks: Record<string, number>;
-  recentEvents: AnalyticsEvent[];
-}
+import {
+  AnalyticsEvent,
+  VisitorLead,
+  ChatTranscript,
+  AnalyticsData,
+  VisitorIntentAnalysis as AIAnalysisResult,
+  VisitorSessionOption,
+} from '@/types';
+import { AnalyticsHeader } from './analytics/AnalyticsHeader';
+import { AnalyticsTabsNav, TabType } from './analytics/AnalyticsTabsNav';
+import { AnalyticsConfirmBanner } from './analytics/AnalyticsConfirmBanner';
+import { AnalyticsOverviewTab } from './analytics/AnalyticsOverviewTab';
+import { AnalyticsEventStreamTab } from './analytics/AnalyticsEventStreamTab';
+import { AnalyticsLeadsTab } from './analytics/AnalyticsLeadsTab';
+import { AnalyticsAiSynthesisTab } from './analytics/AnalyticsAiSynthesisTab';
 
 interface AnalyticsWidgetProps {
   isOpen: boolean;
@@ -35,132 +26,394 @@ interface AnalyticsWidgetProps {
 export const AnalyticsWidget: React.FC<AnalyticsWidgetProps> = ({ isOpen, onClose }) => {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('metrics');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [eventTypeFilter, setEventTypeFilter] = useState<string>('all');
+  const [confirmAction, setConfirmAction] = useState<'clear_events' | 'reset_all' | null>(null);
+  const [selectedVisitorForChat, setSelectedVisitorForChat] = useState<string | null>(null);
+
+  // AI Intent Analysis state
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysisResult | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [selectedVisitorIdForAnalysis, setSelectedVisitorIdForAnalysis] = useState<string>('all');
+
+
+  const fetchAnalytics = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/analytics');
+      const json = await res.json();
+      if (json.success && json.data) {
+        setData(json.data);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
-      setLoading(true);
-      fetch('/api/analytics')
-        .then((res) => res.json())
-        .then((json) => {
-          if (json.success && json.data) {
-            setData(json.data);
-          }
-        })
-        .finally(() => setLoading(false));
+      fetchAnalytics();
+      setAiAnalysis(null);
     }
   }, [isOpen]);
+
+  // Handle granular deletion of individual events
+  const handleDeleteEvent = async (eventId?: string) => {
+    if (!eventId) return;
+
+    // Optimistic UI update
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        recentEvents: prev.recentEvents.filter((e) => e.id !== eventId && e._id !== eventId),
+      };
+    });
+
+    try {
+      await fetch('/api/analytics', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete_event', id: eventId }),
+      });
+    } catch {
+      fetchAnalytics();
+    }
+  };
+
+  // Handle deletion of lead/chat
+  const handleDeleteLead = async (visitorId: string) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        visitorLeads: (prev.visitorLeads || []).filter((l) => l.visitorId !== visitorId),
+        chatTranscripts: (prev.chatTranscripts || []).filter((c) => c.visitorId !== visitorId),
+      };
+    });
+
+    try {
+      await fetch('/api/analytics', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete_lead', visitorId }),
+      });
+    } catch {
+      fetchAnalytics();
+    }
+  };
+
+  // Handle bulk clear / reset
+  const handleExecuteBulkAction = async (action: 'clear_events' | 'reset_all') => {
+    try {
+      await fetch('/api/analytics', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+
+      if (action === 'clear_events') {
+        setData((prev) => (prev ? { ...prev, recentEvents: [] } : prev));
+      } else {
+        setData({
+          totalViews: 0,
+          totalResumeDownloads: 0,
+          totalContactClicks: 0,
+          totalSocialClicks: 0,
+          totalProjectClicks: 0,
+          projectClicks: {},
+          sectionEngagement: {},
+          visitorLeads: [],
+          chatTranscripts: [],
+          recentEvents: [],
+        });
+      }
+      setConfirmAction(null);
+    } catch {
+      fetchAnalytics();
+    }
+  };
+
+  // Extract and group unique visitor sessions for selector
+  const visitorSessions = useMemo<VisitorSessionOption[]>(() => {
+    const map = new Map<string, VisitorSessionOption>();
+    const events = data?.recentEvents || [];
+    const leads = data?.visitorLeads || [];
+
+    events.forEach((e) => {
+      const vid = e.visitorId || e.ip || 'anonymous';
+      const existing = map.get(vid);
+      const loc =
+        e.city && e.country ? `${e.city}, ${e.country}` : e.country || e.city || 'Unknown Location';
+      const dev = e.device ? `${e.device} (${e.browser || ''} on ${e.os || ''})` : 'Desktop Browser';
+      const leadMatch = leads.find((l) => l.visitorId === vid);
+
+      if (!existing) {
+        map.set(vid, {
+          visitorId: vid,
+          ip: e.ip,
+          location: loc,
+          device: dev,
+          eventCount: 1,
+          totalDwellSeconds: e.duration || 0,
+          leadName: leadMatch?.name,
+          leadEmail: leadMatch?.email,
+          leadCompany: leadMatch?.company,
+          lastActive: e.timestamp,
+        });
+      } else {
+        existing.eventCount += 1;
+        existing.totalDwellSeconds += e.duration || 0;
+        if (!existing.ip && e.ip) existing.ip = e.ip;
+        if (existing.location === 'Unknown Location' && loc !== 'Unknown Location') {
+          existing.location = loc;
+        }
+      }
+    });
+
+    // Also include leads that might not have recent event logs
+    leads.forEach((l) => {
+      if (!map.has(l.visitorId)) {
+        map.set(l.visitorId, {
+          visitorId: l.visitorId,
+          ip: l.ip,
+          location: l.city && l.country ? `${l.city}, ${l.country}` : l.country || 'Unknown Location',
+          device: 'Chatbot Lead',
+          eventCount: 1,
+          totalDwellSeconds: 0,
+          leadName: l.name,
+          leadEmail: l.email,
+          leadCompany: l.company,
+          lastActive: l.lastActive,
+        });
+      }
+    });
+
+    return Array.from(map.values());
+  }, [data?.recentEvents, data?.visitorLeads]);
+
+  // Run AI Intent Synthesis
+  const handleRunAiAnalysis = async (specificVisitorId?: string) => {
+    setIsAnalyzing(true);
+    setAnalysisError(null);
+    const targetId = specificVisitorId ?? selectedVisitorIdForAnalysis;
+
+    try {
+      const isSingle = targetId && targetId !== 'all';
+      const payload: {
+        mode: 'single_visitor' | 'aggregate_traffic';
+        visitorId?: string;
+      } = {
+        mode: isSingle ? 'single_visitor' : 'aggregate_traffic',
+        visitorId: isSingle ? targetId : undefined,
+      };
+
+      const res = await fetch('/api/ai/analyze-visitor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json();
+      if (json.success && json.data) {
+        setAiAnalysis(json.data);
+        setActiveTab('ai_synthesis');
+      } else {
+        throw new Error(json.error || 'Failed to synthesize intent.');
+      }
+    } catch (err: unknown) {
+      const error = err as Error;
+      setAnalysisError(error.message || 'AI Synthesis encountered an issue.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+
+  // Computed summary metrics
+  const uniqueVisitorsCount = useMemo(() => {
+    const ids = new Set((data?.recentEvents || []).map((e) => e.visitorId || e.ip));
+    return ids.size;
+  }, [data?.recentEvents]);
+
+  const returningVisitorsCount = useMemo(() => {
+    const returning = (data?.recentEvents || []).filter((e) => (e.visitCount || 1) > 1);
+    return new Set(returning.map((e) => e.visitorId)).size;
+  }, [data?.recentEvents]);
+
+  const avgSessionDuration = useMemo(() => {
+    const durationEvents = (data?.recentEvents || []).filter((e) => e.duration && e.duration > 0);
+    if (durationEvents.length === 0) return 0;
+    const total = durationEvents.reduce((acc, curr) => acc + (curr.duration || 0), 0);
+    return Math.round(total / durationEvents.length);
+  }, [data?.recentEvents]);
+
+  const maxScrollAvg = useMemo(() => {
+    const scrollEvents = (data?.recentEvents || []).filter((e) => e.scrollDepth && e.scrollDepth > 0);
+    if (scrollEvents.length === 0) return 0;
+    const total = scrollEvents.reduce((acc, curr) => acc + (curr.scrollDepth || 0), 0);
+    return Math.round(total / scrollEvents.length);
+  }, [data?.recentEvents]);
+
+  // Filtered Events
+  const filteredEvents = useMemo(() => {
+    return (data?.recentEvents || []).filter((e) => {
+      const matchesSearch =
+        searchTerm === '' ||
+        e.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (e.city && e.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (e.country && e.country.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (e.ip && e.ip.includes(searchTerm)) ||
+        (e.targetTitle && e.targetTitle.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (e.section && e.section.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      const matchesType = eventTypeFilter === 'all' || e.type === eventTypeFilter;
+
+      return matchesSearch && matchesType;
+    });
+  }, [data?.recentEvents, searchTerm, eventTypeFilter]);
+
+  const getEventBadgeColor = (type: string) => {
+    switch (type) {
+      case 'page_view':
+        return 'bg-yellow-300 text-black';
+      case 'resume_download':
+        return 'bg-pink-400 text-white';
+      case 'contact_click':
+        return 'bg-emerald-400 text-black';
+      case 'social_click':
+        return 'bg-purple-300 text-black';
+      case 'project_click':
+        return 'bg-cyan-300 text-black';
+      case 'section_dwell':
+        return 'bg-lime-300 text-black';
+      case 'scroll_depth':
+        return 'bg-orange-300 text-black';
+      case 'chat_interaction':
+        return 'bg-indigo-400 text-white';
+      default:
+        return 'bg-slate-200 text-black';
+    }
+  };
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
+            animate={{ opacity: 0.6 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black z-50 cursor-pointer"
+            className="fixed inset-0 bg-black z-80 cursor-pointer"
           />
 
+          {/* Modal Container */}
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
+            initial={{ scale: 0.92, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl p-5 bg-white dark:bg-slate-900 border-4 border-black dark:border-white shadow-[10px_10px_0px_0px_#70d6ff] font-mono"
+            exit={{ scale: 0.92, opacity: 0 }}
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-90 w-[95vw] max-w-4xl max-h-[90vh] p-4 sm:p-6 bg-white dark:bg-slate-900 border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_#70d6ff] font-mono flex flex-col overflow-hidden"
           >
-            <div className="flex items-center justify-between border-b-2 border-black dark:border-white pb-3 mb-4">
-              <h3 className="text-sm font-extrabold uppercase text-black dark:text-white flex items-center gap-2">
-                <Activity className="w-4 h-4 text-cyan-500 stroke-[2.5]" />
-                VISITOR INTELLIGENCE & LOCATION ANALYTICS
-              </h3>
-              <button
-                onClick={onClose}
-                className="p-1 border border-black dark:border-white hover:bg-red-500 hover:text-white cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+            {/* Header */}
+            <AnalyticsHeader
+              loading={loading}
+              onRefresh={fetchAnalytics}
+              onClose={onClose}
+            />
+
+            {/* Navigation Tabs & Actions */}
+            <AnalyticsTabsNav
+              activeTab={activeTab}
+              onSelectTab={(tab) => {
+                setActiveTab(tab);
+                if (tab === 'ai_synthesis' && !aiAnalysis) {
+                  handleRunAiAnalysis();
+                }
+              }}
+              eventsCount={data?.recentEvents?.length || 0}
+              leadsCount={data?.visitorLeads?.length || 0}
+              onClearLogsClick={() => setConfirmAction('clear_events')}
+              onResetAllClick={() => setConfirmAction('reset_all')}
+            />
+
+            {/* Confirmation Banner */}
+            <AnalyticsConfirmBanner
+              confirmAction={confirmAction}
+              onConfirm={() => confirmAction && handleExecuteBulkAction(confirmAction)}
+              onCancel={() => setConfirmAction(null)}
+            />
+
+            {/* Tab Content Body */}
+            <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+              {loading && !data ? (
+                <div className="py-20 text-center uppercase text-xs font-extrabold animate-pulse">
+                  Retrieving Real-Time Visitor Telemetry...
+                </div>
+              ) : null}
+
+              {/* 1. OVERVIEW & METRICS TAB */}
+              {activeTab === 'metrics' && (
+                <AnalyticsOverviewTab
+                  data={data}
+                  uniqueVisitorsCount={uniqueVisitorsCount}
+                  avgSessionDuration={avgSessionDuration}
+                  maxScrollAvg={maxScrollAvg}
+                  returningVisitorsCount={returningVisitorsCount}
+                  isAnalyzing={isAnalyzing}
+                  onRunAiAnalysis={() => handleRunAiAnalysis()}
+                />
+              )}
+
+              {/* 2. LIVE EVENT LOG STREAM TAB */}
+              {activeTab === 'events' && (
+                <AnalyticsEventStreamTab
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  eventTypeFilter={eventTypeFilter}
+                  onEventTypeFilterChange={setEventTypeFilter}
+                  filteredEvents={filteredEvents}
+                  onDeleteEvent={handleDeleteEvent}
+                  getEventBadgeColor={getEventBadgeColor}
+                />
+              )}
+
+              {/* 3. VISITOR LEADS & CHAT TRANSCRIPTS TAB */}
+              {activeTab === 'leads' && (
+                <AnalyticsLeadsTab
+                  leads={data?.visitorLeads || []}
+                  chatTranscripts={data?.chatTranscripts || []}
+                  selectedVisitorForChat={selectedVisitorForChat}
+                  onToggleChatVisitor={(id) =>
+                    setSelectedVisitorForChat(selectedVisitorForChat === id ? null : id)
+                  }
+                  onRunAiAnalysis={(id) => {
+                    setSelectedVisitorIdForAnalysis(id);
+                    handleRunAiAnalysis(id);
+                  }}
+                  onDeleteLead={handleDeleteLead}
+                />
+              )}
+
+              {/* 4. AI INTENT SYNTHESIS TAB */}
+              {activeTab === 'ai_synthesis' && (
+                <AnalyticsAiSynthesisTab
+                  aiAnalysis={aiAnalysis}
+                  isAnalyzing={isAnalyzing}
+                  analysisError={analysisError}
+                  selectedVisitorId={selectedVisitorIdForAnalysis}
+                  visitorOptions={visitorSessions}
+                  onSelectVisitor={(vid) => setSelectedVisitorIdForAnalysis(vid)}
+                  onRunAiAnalysis={(vid) => handleRunAiAnalysis(vid)}
+                />
+              )}
+
             </div>
-
-            {loading ? (
-              <div className="py-12 text-center font-mono text-xs uppercase animate-pulse">
-                Fetching Real-time Visitor Telemetry...
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="p-3 bg-yellow-200 border-2 border-black text-black shadow-[2px_2px_0px_0px_#000]">
-                    <Eye className="w-4 h-4 mb-1" />
-                    <span className="text-xl font-extrabold block">{data?.totalViews || 0}</span>
-                    <span className="text-[10px] font-bold uppercase block">Page Views</span>
-                  </div>
-
-                  <div className="p-3 bg-pink-200 border-2 border-black text-black shadow-[2px_2px_0px_0px_#000]">
-                    <Download className="w-4 h-4 mb-1" />
-                    <span className="text-xl font-extrabold block">{data?.totalResumeDownloads || 0}</span>
-                    <span className="text-[10px] font-bold uppercase block">CV Downloads</span>
-                  </div>
-
-                  <div className="p-3 bg-emerald-200 border-2 border-black text-black shadow-[2px_2px_0px_0px_#000]">
-                    <Mail className="w-4 h-4 mb-1" />
-                    <span className="text-xl font-extrabold block">{data?.totalContactClicks || 0}</span>
-                    <span className="text-[10px] font-bold uppercase block">Email Clicks</span>
-                  </div>
-                </div>
-
-                <div className="border-t-2 border-black dark:border-white pt-3">
-                  <h4 className="text-xs font-bold uppercase text-black dark:text-white mb-2 flex items-center justify-between">
-                    <span>Recent Visitor Log & Geo Intelligence</span>
-                    <span className="text-[10px] bg-black text-yellow-300 px-2 py-0.5 font-bold">
-                      {data?.recentEvents?.length || 0} EVENTS
-                    </span>
-                  </h4>
-
-                  <div className="max-h-64 overflow-y-auto space-y-2 text-xs">
-                    {data?.recentEvents && data.recentEvents.length > 0 ? (
-                      data.recentEvents.map((evt, idx) => (
-                        <div
-                          key={idx}
-                          className="p-2.5 bg-slate-100 dark:bg-slate-800 border-2 border-black dark:border-slate-700 space-y-1.5"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-extrabold uppercase px-1.5 py-0.5 bg-pink-300 text-black border border-black text-[10px]">
-                              {evt.type.replace('_', ' ')}
-                            </span>
-                            <span className="text-[10px] font-bold text-slate-500">
-                              {new Date(evt.timestamp).toLocaleString()}
-                            </span>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2 text-[11px]">
-                            <div className="flex items-center gap-1.5 truncate text-black dark:text-slate-200">
-                              <Globe className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
-                              <span className="font-bold truncate">
-                                {evt.city || 'Unknown'}, {evt.country || 'Global'}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-1.5 truncate text-slate-600 dark:text-slate-400">
-                              <ShieldAlert className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                              <span className="truncate">IP: {evt.ip || '127.0.0.1'}</span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700 pt-1">
-                            <span className="flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400">
-                              <Monitor className="w-3 h-3" />
-                              {evt.device || 'Desktop'} • {evt.os || 'OS'} • {evt.browser || 'Browser'}
-                            </span>
-                            <span>{evt.screen || '1920x1080'}</span>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-slate-500 text-xs italic">No visitor sessions logged yet.</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </motion.div>
         </>
       )}

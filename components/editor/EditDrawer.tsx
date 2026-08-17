@@ -9,7 +9,9 @@ import { ProjectEditor } from './ProjectEditor';
 import { LayoutEditor } from './LayoutEditor';
 import { SocialsEditor } from './SocialsEditor';
 import { SkillsEditor } from './SkillsEditor';
+import { AssistantEditor } from './AssistantEditor';
 import { EditDrawerHeader } from './drawer/EditDrawerHeader';
+
 import { EditDrawerTabs, DrawerTab } from './drawer/EditDrawerTabs';
 import { EditDrawerFooter } from './drawer/EditDrawerFooter';
 import { ThemeEditor } from './drawer/ThemeEditor';
@@ -84,7 +86,7 @@ export const EditDrawer: React.FC<EditDrawerProps> = ({
             animate={{ opacity: 0.6 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black z-40 cursor-pointer"
+            className="fixed inset-0 bg-black z-60 cursor-pointer"
           />
 
           {/* Drawer panel — bottom sheet on mobile, right panel on sm+ */}
@@ -96,7 +98,7 @@ export const EditDrawer: React.FC<EditDrawerProps> = ({
             exit={{ y: '100%', x: 0 }}
             // Override for sm+ screens via a class instead of framer so we don't need media queries in JS
             className="
-              fixed bottom-0 left-0 right-0 z-50 flex flex-col
+              fixed bottom-0 left-0 right-0 z-70 flex flex-col
               h-[82vh] w-full
               sm:top-0 sm:right-0 sm:left-auto sm:bottom-auto sm:h-full sm:w-full sm:max-w-2xl
               bg-white dark:bg-slate-900
@@ -148,7 +150,14 @@ export const EditDrawer: React.FC<EditDrawerProps> = ({
                   onChange={(soc) => setDraftData({ ...draftData, socials: soc })}
                 />
               )}
+              {activeTab === 'assistant' && (
+                <AssistantEditor
+                  data={draftData}
+                  onChange={(updated) => updateDraftAndSync(updated)}
+                />
+              )}
               {activeTab === 'layout' && (
+
                 <LayoutEditor
                   cards={draftData.cards}
                   onChange={(c) => setDraftData({ ...draftData, cards: c })}

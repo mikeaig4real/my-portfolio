@@ -69,7 +69,7 @@ export const StealthLoginModal: React.FC<StealthLoginModalProps> = ({
             animate={{ opacity: 0.6 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black z-50 cursor-pointer"
+            className="fixed inset-0 bg-black z-80 cursor-pointer"
           />
 
           {/* Modal — centered on desktop, bottom sheet on very small screens */}
@@ -79,7 +79,7 @@ export const StealthLoginModal: React.FC<StealthLoginModalProps> = ({
             exit={{ scale: 0.92, opacity: 0, y: 20 }}
             transition={{ type: 'spring', stiffness: 320, damping: 28 }}
             className="
-              fixed z-50
+              fixed z-90
               bottom-0 left-0 right-0
               sm:bottom-auto sm:left-1/2 sm:right-auto sm:top-1/2
               sm:-translate-x-1/2 sm:-translate-y-1/2

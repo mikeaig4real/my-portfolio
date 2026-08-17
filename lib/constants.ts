@@ -62,6 +62,9 @@ export const STORAGE_KEYS = {
   ADMIN_SESSION_VALUE: config.security.adminSessionTokenValue,
   CHECKPOINTS: 'neobrutal_checkpoints',
   THEME_MODE: 'neobrutal_theme_mode',
+  VISITOR_ID: 'neobrutal_visitor_id',
+  VISITOR_VISIT_COUNT: 'neobrutal_visit_count',
+  LAST_ACTIVE_TS: 'neobrutal_last_active_ts',
 } as const;
 
 export const SHORTCUT_KEYS = {
@@ -92,6 +95,12 @@ export const ANALYTICS_EVENTS = {
   PROJECT_CLICK: 'project_click',
   RESUME_DOWNLOAD: 'resume_download',
   CONTACT_CLICK: 'contact_click',
+  SOCIAL_CLICK: 'social_click',
+  SESSION_DURATION: 'session_duration',
+  SCROLL_DEPTH: 'scroll_depth',
+  SECTION_DWELL: 'section_dwell',
+  CHAT_INTERACTION: 'chat_interaction',
+  OUTBOUND_LINK: 'outbound_link',
 } as const;
 
 export const DEFAULT_CUSTOMIZATION = {

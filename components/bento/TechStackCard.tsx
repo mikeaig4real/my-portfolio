@@ -100,7 +100,7 @@ export const TechStackCard: React.FC<TechStackCardProps> = ({
         {skills.map((group) => (
           <div key={group.id} className="space-y-1 relative group/cat">
             {isEditingActive && (
-              <div className="absolute -top-1.5 -right-1.5 hidden group-hover/cat:block z-20">
+              <div className="absolute -top-1.5 -right-1.5 hidden group-hover/cat:block z-10">
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group.id); }}
                   title="Delete category"
@@ -142,11 +142,11 @@ export const TechStackCard: React.FC<TechStackCardProps> = ({
                   </span>
 
                   {isEditingActive && (
-                    <span className="absolute -top-1.5 -right-2.5 opacity-0 group-hover/skill:opacity-100 transition-opacity z-20 pointer-events-none group-hover/skill:pointer-events-auto">
+                    <span className="absolute -top-1.5 -right-2.5 opacity-0 group-hover/skill:opacity-100 transition-opacity z-10 pointer-events-none group-hover/skill:pointer-events-auto">
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDeleteSkill(group.id, sIdx); }}
                         title="Delete skill"
-                        className="p-0.5 bg-red-500 text-white border border-black hover:bg-red-600 cursor-pointer shadow-[1px_1px_0px_0px_#000] z-20"
+                        className="p-0.5 bg-red-500 text-white border border-black hover:bg-red-600 cursor-pointer shadow-[1px_1px_0px_0px_#000] z-10"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       </button>

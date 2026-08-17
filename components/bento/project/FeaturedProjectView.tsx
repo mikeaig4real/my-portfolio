@@ -130,7 +130,7 @@ export const FeaturedProjectView: React.FC<FeaturedProjectViewProps> = ({
           </AnimatePresence>
 
           {/* Metric Pill Overlay */}
-          <div className="absolute top-2 right-2 z-30 bg-black text-yellow-300 px-2 py-0.5 text-xs font-mono font-bold border border-white shadow-[2px_2px_0px_0px_#000] flex items-center gap-1">
+          <div className="absolute top-2 right-2 z-10 bg-black text-yellow-300 px-2 py-0.5 text-xs font-mono font-bold border border-white shadow-[2px_2px_0px_0px_#000] flex items-center gap-1">
             <span>⚡</span>
             <InlineText
               value={project.metric?.label || 'Metric'}
@@ -146,7 +146,7 @@ export const FeaturedProjectView: React.FC<FeaturedProjectViewProps> = ({
           </div>
 
           {/* Gallery Slide Indicator & Add Button */}
-          <div className="absolute bottom-2 right-2 z-30 flex items-center gap-1 bg-black/80 p-1 border border-white">
+          <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1 bg-black/80 p-1 border border-white">
             {images.map((_, idx) => (
               <button
                 key={idx}

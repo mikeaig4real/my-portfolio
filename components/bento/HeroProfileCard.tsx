@@ -8,6 +8,7 @@ import { BrutalCard } from '@/components/ui/BrutalCard';
 import { BrutalButton } from '@/components/ui/BrutalButton';
 import { InlineText } from '@/components/inline/InlineText';
 import { InlineImagePicker } from '@/components/inline/InlineImagePicker';
+import { trackContactClick, trackSocialClick, trackResumeDownload } from '@/lib/analyticsTracker';
 
 interface HeroProfileCardProps {
   profile: Profile;
@@ -59,7 +60,7 @@ export const HeroProfileCard: React.FC<HeroProfileCardProps> = ({
               alt={profile.name}
               placeholderText="Upload Avatar"
             />
-            <span className="absolute -bottom-2 -right-2 z-30 bg-black text-white text-lg p-1.5 border-2 border-white dark:border-black shadow-[2px_2px_0px_0px_#000]">
+            <span className="absolute -bottom-2 -right-2 z-10 bg-black text-white text-lg p-1.5 border-2 border-white dark:border-black shadow-[2px_2px_0px_0px_#000]">
               <InlineText
                 value={profile.statusEmoji || '⚡'}
                 onChange={(val) => updateField('statusEmoji', val)}
@@ -126,6 +127,7 @@ export const HeroProfileCard: React.FC<HeroProfileCardProps> = ({
           variant="yellow"
           size="sm"
           href={`mailto:${profile.email}`}
+          onClick={() => trackContactClick('email')}
         >
           <Mail className="w-4 h-4 stroke-[2.5]" />
           Email Me
@@ -137,6 +139,7 @@ export const HeroProfileCard: React.FC<HeroProfileCardProps> = ({
           href={profile.githubUrl || 'https://github.com'}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackSocialClick('GitHub', profile.githubUrl || 'https://github.com')}
         >
           <ExternalLink className="w-4 h-4 stroke-[2.5]" />
           GitHub Profile
@@ -149,6 +152,7 @@ export const HeroProfileCard: React.FC<HeroProfileCardProps> = ({
             href={profile.resumeUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackResumeDownload(profile.resumeUrl || '')}
           >
             <FileText className="w-4 h-4 stroke-[2.5]" />
             View / Download Resume

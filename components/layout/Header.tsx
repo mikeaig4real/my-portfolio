@@ -13,7 +13,7 @@ export const Header: React.FC<HeaderProps> = () => {
   const { data } = usePortfolioStore();
 
   return (
-    <header className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b-4 border-black dark:border-white shadow-[0px_4px_0px_0px_#000] dark:shadow-[0px_4px_0px_0px_#fff]">
+    <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b-4 border-black dark:border-white shadow-[0px_4px_0px_0px_#000] dark:shadow-[0px_4px_0px_0px_#fff]">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <motion.div

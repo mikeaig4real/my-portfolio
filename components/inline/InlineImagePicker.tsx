@@ -157,7 +157,7 @@ export const InlineImagePicker: React.FC<InlineImagePickerProps> = ({
         )}
 
         {/* Action Overlay: Always visible on mobile/touch screens, hover on desktop */}
-        <div className="absolute inset-0 bg-black/60 sm:bg-black/65 backdrop-blur-xs opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2 z-20">
+        <div className="absolute inset-0 bg-black/60 sm:bg-black/65 backdrop-blur-xs opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2 z-10">
           {isUploading ? (
             <div className="flex items-center gap-2 text-yellow-300 font-mono text-xs font-bold">
               <Loader2 className="w-4 h-4 animate-spin" />

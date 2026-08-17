@@ -92,6 +92,13 @@ if (!parsed.success) {
   throw new Error(`Missing required security environment variables: ${JSON.stringify(fieldErrors)}`);
 }
 
+if (isServer) {
+  logger.info(
+    `🤖 [AI Environment Ready] Provider: "${parsed.data.INFERENCE_PROVIDER}" | Model: "${parsed.data.INFERENCE_MODEL}"`
+  );
+}
+
+
 export const config = {
   security: {
     adminPassword: parsed.data.ADMIN_PASSWORD,

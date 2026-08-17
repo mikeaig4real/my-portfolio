@@ -295,4 +295,23 @@ export const defaultPortfolioData: PortfolioData = {
       },
     },
   ],
+  chatConfig: {
+    enabled: true,
+    bubbleVisible: true,
+    bubbleText: 'Questions about my experience? Chat with my AI twin!',
+    triggerButtonText: 'AI Assistant',
+    triggerButtonSubtext: 'Ask My Resume',
+    headerTitle: "{name}'s AI Twin",
+    headerSubtitle: 'Online',
+    headerBadge: 'RESUME AI',
+    introMessage: "Hey there! 👋 I'm {name}'s AI Assistant, trained directly on my live resume & project portfolio.\n\nAsk me anything about my experience, frameworks, architectural choices, or availability! What brings you by today? 🚀",
+    quickQuestions: [
+      '⚡ What is your core tech stack?',
+      '🏆 Tell me about your featured projects',
+      '💼 Are you available for full-time or contract work?',
+      '📍 Where are you based & how can I reach you?',
+    ],
+    accentColor: '#facc15',
+  },
 };
+

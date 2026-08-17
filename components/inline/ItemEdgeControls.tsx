@@ -19,7 +19,7 @@ export const DeleteEdgeControl: React.FC<DeleteEdgeControlProps> = ({
         onDelete();
       }}
       title={title}
-      className="p-1 bg-red-500 text-white border border-black hover:bg-red-600 cursor-pointer shadow-[1px_1px_0px_0px_#000] z-20"
+      className="p-1 bg-red-500 text-white border border-black hover:bg-red-600 cursor-pointer shadow-[1px_1px_0px_0px_#000] z-10"
     >
       <X className="w-3.5 h-3.5 stroke-3" />
     </button>
@@ -41,9 +41,9 @@ export const AddEdgeControl: React.FC<AddEdgeControlProps> = ({
         e.stopPropagation();
         onAdd();
       }}
-      className="px-2 py-1 bg-yellow-300 hover:bg-yellow-400 text-black border-2 border-black font-mono font-extrabold text-xs uppercase shadow-[2px_2px_0px_0px_#000] cursor-pointer flex items-center gap-1 my-2 z-20"
+      className="px-2 py-1 bg-yellow-300 hover:bg-yellow-400 text-black border-2 border-black font-mono font-extrabold text-xs uppercase shadow-[2px_2px_0px_0px_#000] cursor-pointer flex items-center gap-1 my-2 z-10"
     >
-      <Plus className="w-3.5 h-3.5 stroke-[3]" />
+      <Plus className="w-3.5 h-3.5 stroke-3" />
       <span>{label}</span>
     </button>
   );
@@ -63,7 +63,7 @@ export const ColorSwatchPicker: React.FC<ColorSwatchPickerProps> = ({
   const [open, setOpen] = React.useState(false);
 
   return (
-    <div className="relative inline-block z-20">
+    <div className="relative inline-block z-10">
       <button
         onClick={() => setOpen(!open)}
         title="Change Accent Color"
@@ -74,7 +74,7 @@ export const ColorSwatchPicker: React.FC<ColorSwatchPickerProps> = ({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-7 bg-white dark:bg-slate-800 border-2 border-black p-1.5 flex gap-1 shadow-[3px_3px_0px_0px_#000] z-30">
+        <div className="absolute right-0 top-7 bg-white dark:bg-slate-800 border-2 border-black p-1.5 flex gap-1 shadow-[3px_3px_0px_0px_#000] z-20">
           {SWATCHES.map((c) => (
             <button
               key={c}

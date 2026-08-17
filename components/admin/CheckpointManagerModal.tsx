@@ -33,14 +33,14 @@ export const CheckpointManagerModal: React.FC<CheckpointManagerModalProps> = ({
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black z-50 cursor-pointer"
+            className="fixed inset-0 bg-black z-80 cursor-pointer"
           />
 
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-lg p-5 bg-white dark:bg-slate-900 border-4 border-black dark:border-white shadow-[10px_10px_0px_0px_#a7f3d0]"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-90 w-full max-w-lg p-5 bg-white dark:bg-slate-900 border-4 border-black dark:border-white shadow-[10px_10px_0px_0px_#a7f3d0]"
           >
             <div className="flex items-center justify-between border-b-2 border-black dark:border-white pb-3 mb-4">
               <h3 className="text-sm font-mono font-extrabold uppercase text-black dark:text-white flex items-center gap-2">

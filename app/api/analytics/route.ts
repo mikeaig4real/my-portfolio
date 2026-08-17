@@ -1,20 +1,50 @@
-import { connectToDatabase } from '@/lib/mongodb';
-import Analytics from '@/models/Analytics';
 import { cookies } from 'next/headers';
 import { validateRequest } from '@/lib/schemas/validateRequest';
-import { AnalyticsInputSchema } from '@/lib/schemas/portfolioSchema';
-import { ANALYTICS_EVENTS, STORAGE_KEYS, APP_CONSTANTS } from '@/lib/constants';
+import { AnalyticsInputSchema, AnalyticsDeleteInputSchema } from '@/lib/schemas/portfolioSchema';
+import { STORAGE_KEYS } from '@/lib/constants';
 import { ApiResponse } from '@/lib/apiResponse';
 import { parseUserAgent, getGeoIpInfo } from '@/lib/visitorIntelligence';
+import {
+  getAnalyticsUnified,
+  recordAnalyticsEventUnified,
+  deleteAnalyticsUnified,
+} from '@/lib/db/analyticsDb';
+import { checkRateLimit, createRateLimitResponse } from '@/lib/rateLimit';
 
 export async function POST(request: Request) {
+  // Analytics Telemetry Rate Limiting: Max 120 beacon events per minute per IP
+  const rateLimitResult = checkRateLimit(request, {
+    keyPrefix: 'analytics_post',
+    intervalMs: 60 * 1000,
+    maxRequests: 120,
+  });
+
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult, 'Too many analytics beacons recorded.');
+  }
+
   const validation = await validateRequest(request, AnalyticsInputSchema);
   if (!validation.success) {
     return validation.errorResponse;
   }
 
-  const { type, details, screen, language } = validation.data;
-  const targetId = details;
+
+  const {
+    id,
+    type,
+    visitorId,
+    visitCount,
+    targetId,
+    targetTitle,
+    details,
+    screen,
+    language,
+    duration,
+    scrollDepth,
+    section,
+  } = validation.data;
+
+  const eventId = id || `evt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   const userAgent = request.headers.get('user-agent') || 'unknown';
 
   const rawIp =
@@ -27,50 +57,36 @@ export async function POST(request: Request) {
   const { browser, os, device } = parseUserAgent(userAgent);
   const geoInfo = await getGeoIpInfo(clientIp);
 
+  const newEvent = {
+    id: eventId,
+    type,
+    visitorId: visitorId || 'anonymous',
+    visitCount: visitCount || 1,
+    targetId: targetId || details,
+    targetTitle: targetTitle || '',
+    timestamp: new Date(),
+    userAgent: userAgent.slice(0, 120),
+    ip: clientIp,
+    country: geoInfo.country,
+    city: geoInfo.city,
+    region: geoInfo.region,
+    isp: geoInfo.isp,
+    browser,
+    os,
+    device,
+    screen: screen || '1920x1080',
+    language: language || 'en',
+    duration: duration || 0,
+    scrollDepth: scrollDepth || 0,
+    section: section || '',
+    details: details || '',
+  };
+
   try {
-    await connectToDatabase();
-
-    let doc = await Analytics.findOne();
-    if (!doc) {
-      doc = await Analytics.create({});
-    }
-
-    if (type === ANALYTICS_EVENTS.PAGE_VIEW) {
-      doc.totalViews = (doc.totalViews || 0) + 1;
-    } else if (type === ANALYTICS_EVENTS.RESUME_DOWNLOAD) {
-      doc.totalResumeDownloads = (doc.totalResumeDownloads || 0) + 1;
-    } else if (type === ANALYTICS_EVENTS.CONTACT_CLICK) {
-      doc.totalContactClicks = (doc.totalContactClicks || 0) + 1;
-    } else if (type === ANALYTICS_EVENTS.PROJECT_CLICK && targetId) {
-      const current = doc.projectClicks.get(targetId) || 0;
-      doc.projectClicks.set(targetId, current + 1);
-    }
-
-    doc.recentEvents.unshift({
-      type,
-      targetId,
-      timestamp: new Date(),
-      userAgent: userAgent.slice(0, 100),
-      ip: clientIp,
-      country: geoInfo.country,
-      city: geoInfo.city,
-      region: geoInfo.region,
-      isp: geoInfo.isp,
-      browser,
-      os,
-      device,
-      screen: screen || '1920x1080',
-      language: language || 'en',
-    });
-
-    if (doc.recentEvents.length > APP_CONSTANTS.MAX_RECENT_EVENTS) {
-      doc.recentEvents = doc.recentEvents.slice(0, APP_CONSTANTS.MAX_RECENT_EVENTS);
-    }
-
-    await doc.save();
-    return ApiResponse.success();
+    const result = await recordAnalyticsEventUnified(newEvent);
+    return ApiResponse.success(result);
   } catch {
-    return ApiResponse.serverError();
+    return ApiResponse.serverError('Failed to record analytics event.');
   }
 }
 
@@ -83,21 +99,33 @@ export async function GET() {
   }
 
   try {
-    await connectToDatabase();
-    const doc = await Analytics.findOne().lean();
-
-    if (!doc) {
-      return ApiResponse.success({
-        totalViews: 0,
-        totalResumeDownloads: 0,
-        totalContactClicks: 0,
-        projectClicks: {},
-        recentEvents: [],
-      });
-    }
-
-    return ApiResponse.success(doc);
+    const data = await getAnalyticsUnified();
+    return ApiResponse.success(data);
   } catch {
     return ApiResponse.serverError('Failed to fetch analytics.');
   }
 }
+
+export async function DELETE(request: Request) {
+  const cookieStore = await cookies();
+  const session = cookieStore.get(STORAGE_KEYS.ADMIN_SESSION)?.value;
+
+  if (session !== STORAGE_KEYS.ADMIN_SESSION_VALUE) {
+    return ApiResponse.unauthorized();
+  }
+
+  const validation = await validateRequest(request, AnalyticsDeleteInputSchema);
+  if (!validation.success) {
+    return validation.errorResponse;
+  }
+
+  const { action, id, visitorId } = validation.data;
+
+  try {
+    await deleteAnalyticsUnified(action, id, visitorId);
+    return ApiResponse.success({ action, id, visitorId }, 'Analytics deletion completed successfully.');
+  } catch {
+    return ApiResponse.serverError('Failed to delete analytics.');
+  }
+}
+

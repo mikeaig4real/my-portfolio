@@ -39,7 +39,11 @@ export const BentoCardWrapper: React.FC<BentoCardWrapperProps> = ({
   const supportsAutoFetch = ['featured_project', 'project_view', 'certification', 'custom_note'].includes(card.type);
 
   return (
-    <div className="group/card relative w-full h-full min-h-55 max-h-162.5 overflow-visible">
+    <div
+      data-section-name={card.title || card.type.replace('_', ' ')}
+      data-card-type={card.type}
+      className="group/card relative w-full h-full min-h-55 max-h-162.5 overflow-visible"
+    >
       {/* Inner Scrollable Card Content */}
       <div className="w-full h-full overflow-y-auto no-scrollbar">
         {children}
@@ -48,8 +52,8 @@ export const BentoCardWrapper: React.FC<BentoCardWrapperProps> = ({
       {/* Bottom-Right Outer Tag Controls */}
       {isEditingActive && (
         <div
-          className={`absolute -bottom-3 -right-3 z-50 transition-all duration-200 ${
-            isMenuOpen ? 'opacity-100 z-50' : 'opacity-30 group-hover/card:opacity-100'
+          className={`absolute -bottom-3 -right-3 z-20 transition-all duration-200 ${
+            isMenuOpen ? 'opacity-100 z-25' : 'opacity-30 group-hover/card:opacity-100'
           }`}
         >
           {!isMenuOpen ? (

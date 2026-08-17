@@ -78,7 +78,7 @@ export const FooterEditorModal: React.FC<FooterEditorModalProps> = ({
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black z-50 cursor-pointer"
+            className="fixed inset-0 bg-black z-80 cursor-pointer"
           />
 
           {/* Modal */}
@@ -87,7 +87,7 @@ export const FooterEditorModal: React.FC<FooterEditorModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.92, opacity: 0, y: 20 }}
             transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl max-h-[90vh] flex flex-col bg-white dark:bg-slate-900 border-4 border-black dark:border-white shadow-[10px_10px_0px_0px_#70d6ff]"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-90 w-full max-w-2xl max-h-[90vh] flex flex-col bg-white dark:bg-slate-900 border-4 border-black dark:border-white shadow-[10px_10px_0px_0px_#70d6ff]"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b-2 border-black dark:border-white p-4 shrink-0">

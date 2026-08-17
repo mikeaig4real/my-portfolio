@@ -5,6 +5,7 @@ import { SQLiteDatabaseAdapter } from './adapters/sqliteAdapter';
 import { DrizzleSqliteAdapter } from './adapters/drizzleAdapter';
 import { PortfolioData } from '@/types/portfolio';
 import { logger } from '@/lib/logger';
+import { triggerBackgroundSyncIfStale, syncPortfolioAcrossDatabases } from './syncEngine';
 
 class DatabaseManager {
   private adapters: Map<string, IDatabaseAdapter> = new Map();
@@ -36,31 +37,78 @@ class DatabaseManager {
 export const dbManager = new DatabaseManager();
 
 export async function getPortfolioDataUnified(): Promise<PortfolioData> {
-  const adapter = dbManager.getAdapter();
-  try {
-    return await adapter.getPortfolio();
-  } catch (err) {
-    logger.warn(`Primary database adapter "${adapter.name}" failed, falling back to SQLite:`, err);
-    const fallback = dbManager.getAdapter('sqlite');
-    return await fallback.getPortfolio();
+  const preferred = config.database.provider || 'mongodb';
+  let portfolio: PortfolioData | null = null;
+
+  // 1. Try Preferred/MongoDB first
+  if (preferred === 'mongodb') {
+    try {
+      const mongo = dbManager.getAdapter('mongodb');
+      portfolio = await mongo.getPortfolio();
+    } catch (err) {
+      logger.warn('Primary MongoDB portfolio read failed, falling back to Drizzle SQLite:', err);
+    }
   }
+
+  // 2. Try Drizzle SQLite if MongoDB failed or not preferred
+  if (!portfolio) {
+    try {
+      const drizzle = dbManager.getAdapter('drizzle');
+      portfolio = await drizzle.getPortfolio();
+    } catch (err) {
+      logger.warn('Drizzle SQLite portfolio read failed, falling back to JSON file:', err);
+    }
+  }
+
+  // 3. Fallback to JSON file
+  if (!portfolio) {
+    const jsonAdapter = dbManager.getAdapter('sqlite');
+    portfolio = await jsonAdapter.getPortfolio();
+  }
+
+  // Trigger background synchronization across other tiers so they stay 100% in sync
+  triggerBackgroundSyncIfStale(portfolio);
+
+  return portfolio;
 }
 
 export async function savePortfolioDataUnified(data: PortfolioData): Promise<PortfolioData> {
-  const adapter = dbManager.getAdapter();
+  let savedData = data;
+
+  // 1. Try MongoDB
   try {
-    const saved = await adapter.savePortfolio(data);
-    if (adapter.name !== 'sqlite') {
-      await dbManager.getAdapter('sqlite').savePortfolio(data);
-    }
-    return saved;
+    const mongo = dbManager.getAdapter('mongodb');
+    savedData = await mongo.savePortfolio(data);
   } catch (err) {
-    logger.warn(`Primary database adapter "${adapter.name}" save failed, saving to SQLite fallback:`, err);
-    return await dbManager.getAdapter('sqlite').savePortfolio(data);
+    logger.warn('MongoDB portfolio save skipped (offline/unreachable):', err);
   }
+
+  // 2. Persist to Drizzle SQLite (Primary local database)
+  try {
+    const drizzle = dbManager.getAdapter('drizzle');
+    await drizzle.savePortfolio(savedData);
+  } catch (err) {
+    logger.warn('Drizzle SQLite portfolio save skipped:', err);
+  }
+
+  // 3. Mirror to JSON file fallback
+  try {
+    const jsonAdapter = dbManager.getAdapter('sqlite');
+    await jsonAdapter.savePortfolio(savedData);
+  } catch (err) {
+    logger.warn('JSON file portfolio save skipped:', err);
+  }
+
+  // Asynchronously synchronize across all databases in the background
+  syncPortfolioAcrossDatabases(savedData).catch((err) =>
+    logger.debug('Async background post-save sync error:', err)
+  );
+
+  return savedData;
 }
 
 export * from './types';
 export * from './adapters/mongoAdapter';
 export * from './adapters/sqliteAdapter';
 export * from './adapters/drizzleAdapter';
+export * from './syncEngine';

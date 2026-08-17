@@ -125,13 +125,13 @@ const BentoDragCardItem: React.FC<BentoDragCardItemProps> = ({
       dragControls={controls}
       dragListener={false}
       dragSnapToOrigin={true}
-      whileDrag={{ zIndex: 50, scale: 1.03, opacity: 0.95 }}
+      whileDrag={{ zIndex: 30, scale: 1.03, opacity: 0.95 }}
       onDragStart={() => setIsDragging(true)}
       onDrag={handleDrag}
       onDragEnd={handleDragEnd}
       transition={{ type: 'spring', stiffness: 350, damping: 25 }}
       className={`relative ${getColSpanClass(card.colSpan)} ${getRowSpanClass(card.rowSpan)} ${
-        isDragging ? 'z-50' : ''
+        isDragging ? 'z-30' : ''
       } ${!card.visible ? 'opacity-40 grayscale' : ''} ${
         isNewlyAdded ? 'ring-4 ring-yellow-400 dark:ring-yellow-300 shadow-[0_0_30px_rgba(250,204,21,0.9)] animate-pulse' : ''
       }`}

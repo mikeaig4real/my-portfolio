@@ -130,6 +130,20 @@ export interface BentoCustomizationConfig {
   footerBadgeText?: string;
 }
 
+export interface ChatConfig {
+  enabled?: boolean;
+  bubbleVisible?: boolean;
+  bubbleText?: string;
+  triggerButtonText?: string;
+  triggerButtonSubtext?: string;
+  headerTitle?: string;
+  headerSubtitle?: string;
+  headerBadge?: string;
+  introMessage?: string;
+  quickQuestions?: string[];
+  accentColor?: string;
+}
+
 export interface PortfolioData {
   profile: Profile;
   workplaces: Workplace[];
@@ -139,7 +153,9 @@ export interface PortfolioData {
   cards: BentoCardConfig[];
   colorScheme?: string;
   customization?: BentoCustomizationConfig;
+  chatConfig?: ChatConfig;
   // NOTE: checkpoints are intentionally NOT part of PortfolioData.
   // They live in usePortfolioStore state + localStorage only,
   // so restoring a checkpoint never overwrites the checkpoints list itself.
 }
+

@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, Edit2, X, Check } from 'lucide-react';
 import { BrutalButton } from '@/components/ui/BrutalButton';
+import { trackProjectClick } from '@/lib/analyticsTracker';
 
 interface InlineLinkPopoverProps {
   label: string;
@@ -12,6 +13,7 @@ interface InlineLinkPopoverProps {
   variant?: 'yellow' | 'cyan' | 'pink' | 'lime' | 'purple' | 'white' | 'orange' | 'dark';
   icon?: React.ReactNode;
   isEditingActive?: boolean;
+  onClick?: () => void;
   onUpdateLink: (label: string, url: string) => void;
 }
 
@@ -21,6 +23,7 @@ export const InlineLinkPopover: React.FC<InlineLinkPopoverProps> = ({
   variant = 'yellow',
   icon,
   isEditingActive = false,
+  onClick,
   onUpdateLink,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -59,7 +62,20 @@ export const InlineLinkPopover: React.FC<InlineLinkPopoverProps> = ({
   if (!isEditingActive) {
     if (!url) return null;
     return (
-      <BrutalButton variant={variant} size="sm" href={url} target="_blank" rel="noopener noreferrer">
+      <BrutalButton
+        variant={variant}
+        size="sm"
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => {
+          if (onClick) {
+            onClick();
+          } else {
+            trackProjectClick(url, label, url);
+          }
+        }}
+      >
         {icon || <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />}
         {label}
       </BrutalButton>

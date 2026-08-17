@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import { User, Briefcase, Rocket, LayoutGrid, Palette, Link, Wrench } from 'lucide-react';
+import { User, Briefcase, Rocket, LayoutGrid, Palette, Link, Wrench, Bot } from 'lucide-react';
 
-export type DrawerTab = 'profile' | 'experience' | 'projects' | 'skills' | 'socials' | 'layout' | 'colors';
+export type DrawerTab = 'profile' | 'experience' | 'projects' | 'skills' | 'socials' | 'assistant' | 'layout' | 'colors';
 
 interface EditDrawerTabsProps {
   activeTab: DrawerTab;
@@ -17,9 +17,11 @@ export const EditDrawerTabs: React.FC<EditDrawerTabsProps> = ({ activeTab, onTab
     { id: 'projects', label: 'Projects', icon: <Rocket className="w-3.5 h-3.5 stroke-[2.5]" /> },
     { id: 'skills', label: 'Skills', icon: <Wrench className="w-3.5 h-3.5 stroke-[2.5]" /> },
     { id: 'socials', label: 'Socials', icon: <Link className="w-3.5 h-3.5 stroke-[2.5]" /> },
+    { id: 'assistant', label: 'AI Chat', icon: <Bot className="w-3.5 h-3.5 stroke-[2.5]" /> },
     { id: 'layout', label: 'Layout', icon: <LayoutGrid className="w-3.5 h-3.5 stroke-[2.5]" /> },
     { id: 'colors', label: 'Theme', icon: <Palette className="w-3.5 h-3.5 stroke-[2.5]" /> },
   ] as const;
+
 
   return (
     <div className="flex border-b-3 border-black dark:border-white bg-slate-100 dark:bg-slate-800 overflow-x-auto no-scrollbar">

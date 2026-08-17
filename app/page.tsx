@@ -7,8 +7,10 @@ import { Footer } from '@/components/layout/Footer';
 import { BentoGrid } from '@/components/bento/BentoGrid';
 import { StealthLoginModal } from '@/components/admin/StealthLoginModal';
 import { useRouter } from 'next/navigation';
-import { FONT_PRESETS, ANALYTICS_EVENTS, SHORTCUT_KEYS, STORAGE_KEYS } from '@/lib/constants';
+import { FONT_PRESETS, SHORTCUT_KEYS, STORAGE_KEYS } from '@/lib/constants';
 import { getThemePreset } from '@/lib/colorPalettes';
+import { initSessionTelemetry } from '@/lib/analyticsTracker';
+import { ResumeChatbot } from '@/components/chat/ResumeChatbot';
 
 export default function Home() {
   const { data, loading, fetchPortfolio } = usePortfolioStore();
@@ -18,19 +20,8 @@ export default function Home() {
   useEffect(() => {
     fetchPortfolio();
 
-    const screenRes = typeof window !== 'undefined' ? `${window.screen.width}x${window.screen.height}` : '1920x1080';
-    const lang = typeof window !== 'undefined' ? navigator.language : 'en';
-
-    // Log non-blocking visitor analytics with screen & language telemetry
-    fetch('/api/analytics', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: ANALYTICS_EVENTS.PAGE_VIEW,
-        screen: screenRes,
-        language: lang,
-      }),
-    }).catch(() => {});
+    // Initialize full visitor intelligence (page view, active dwell time, scroll depth milestones, section observer)
+    const cleanupTelemetry = initSessionTelemetry();
 
     // Cross-tab & Focus Synchronization: auto-refetch when user switches back to this tab or when data updates in another tab
     const handleFocusOrVisibility = () => {
@@ -62,6 +53,7 @@ export default function Home() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => {
+      cleanupTelemetry();
       window.removeEventListener('focus', handleFocusOrVisibility);
       document.removeEventListener('visibilitychange', handleFocusOrVisibility);
       window.removeEventListener('storage', handleStorageChange);
@@ -101,6 +93,9 @@ export default function Home() {
       </main>
 
       <Footer onSecretAdminTap={() => setIsLoginOpen(true)} />
+
+      {/* Floating AI Resume Chatbot */}
+      <ResumeChatbot />
 
       <StealthLoginModal
         isOpen={isLoginOpen}

@@ -122,6 +122,25 @@ export const CustomizationSchema = z.object({
   footerBadgeText: z.string().nullish().transform(v => v || 'NEOBRUTALISM v2.0'),
 });
 
+export const ChatConfigSchema = z.object({
+  enabled: z.boolean().nullish().transform(v => v ?? true),
+  bubbleVisible: z.boolean().nullish().transform(v => v ?? true),
+  bubbleText: z.string().nullish().transform(v => v || 'Questions about my experience? Chat with my AI twin!'),
+  triggerButtonText: z.string().nullish().transform(v => v || 'AI Assistant'),
+  triggerButtonSubtext: z.string().nullish().transform(v => v || 'Ask My Resume'),
+  headerTitle: z.string().nullish().transform(v => v || "{name}'s AI Twin"),
+  headerSubtitle: z.string().nullish().transform(v => v || 'Online'),
+  headerBadge: z.string().nullish().transform(v => v || 'RESUME AI'),
+  introMessage: z.string().nullish().transform(v => v || "Hey there! 👋 I'm {name}'s AI Assistant, trained directly on my live resume & project portfolio.\n\nAsk me anything about my experience, frameworks, architectural choices, or availability! What brings you by today? 🚀"),
+  quickQuestions: z.array(z.string()).nullish().transform(v => v || [
+    '⚡ What is your core tech stack?',
+    '🏆 Tell me about your featured projects',
+    '💼 Are you available for full-time or contract work?',
+    '📍 Where are you based & how can I reach you?',
+  ]),
+  accentColor: z.string().nullish().transform(v => v || '#facc15'),
+});
+
 export const PortfolioDataSchema = z.object({
   profile: ProfileSchema,
   workplaces: z.array(WorkplaceSchema).nullish().transform(v => v || []),
@@ -131,6 +150,7 @@ export const PortfolioDataSchema = z.object({
   cards: z.array(BentoCardConfigSchema).nullish().transform(v => v || []),
   colorScheme: z.string().nullish().transform(v => v || 'cyber_yellow'),
   customization: CustomizationSchema.nullish(),
+  chatConfig: ChatConfigSchema.nullish(),
 });
 
 import { defaultPortfolioData } from '@/lib/defaultData';
@@ -183,6 +203,7 @@ export function reconcilePortfolioData(data: unknown): PortfolioData {
     skills: reconciledSkills,
     socials: reconciledSocials,
     customization: parsed.customization || defaultPortfolioData.customization,
+    chatConfig: parsed.chatConfig || defaultPortfolioData.chatConfig,
   } as unknown as PortfolioData;
 }
 
@@ -202,8 +223,57 @@ export const LoginInputSchema = z.object({
 });
 
 export const AnalyticsInputSchema = z.object({
+  id: z.string().optional(),
   type: z.string(),
+  visitorId: z.string().optional(),
+  visitCount: z.number().optional(),
+  targetId: z.string().optional(),
+  targetTitle: z.string().optional(),
   details: z.string().optional(),
   screen: z.string().optional(),
   language: z.string().optional(),
+  duration: z.number().optional(),
+  scrollDepth: z.number().optional(),
+  section: z.string().optional(),
 });
+
+export const AnalyticsDeleteInputSchema = z.object({
+  action: z.enum(['delete_event', 'delete_chat', 'delete_lead', 'clear_events', 'reset_all']),
+  id: z.string().optional(),
+  visitorId: z.string().optional(),
+});
+
+export const AIChatInputSchema = z.object({
+  messages: z.array(
+    z.object({
+      role: z.enum(['user', 'assistant', 'system']),
+      content: z.string().min(1),
+    })
+  ),
+  visitorId: z.string().optional(),
+  visitorName: z.string().optional(),
+  visitorEmail: z.string().optional(),
+  visitorCompany: z.string().optional(),
+  visitorIntent: z.string().optional(),
+});
+
+export const AIAnalyzeVisitorInputSchema = z.object({
+  mode: z.enum(['single_visitor', 'aggregate_traffic']).optional(),
+  visitorId: z.string().optional(),
+  ip: z.string().optional(),
+  events: z.array(z.any()).optional(),
+  chats: z.array(z.any()).optional(),
+  lead: z.any().optional(),
+});
+
+export const VisitorIntentAnalysisSchema = z.object({
+  visitorSummary: z.string(),
+  intentCategory: z.string(),
+  intentScore: z.number(),
+  primaryInterest: z.string(),
+  didTheyFindWhatTheyWanted: z.string(),
+  keyObservations: z.array(z.string()),
+  recommendedAction: z.string(),
+});
+
+

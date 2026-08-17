@@ -115,7 +115,7 @@ export const GalleryProjectView: React.FC<GalleryProjectViewProps> = ({
             </motion.div>
           </AnimatePresence>
 
-          <div className="absolute bottom-2 right-2 z-30 flex items-center gap-1 bg-black/80 p-1 border border-white">
+          <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1 bg-black/80 p-1 border border-white">
             {images.map((_, idx) => (
               <button
                 key={idx}
